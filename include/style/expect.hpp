@@ -797,8 +797,7 @@ struct expect_t {
 
     template<typename U>
     std::string to_string(U value) {
-      return "";
-      // return _mocha_util.is_string<U>() ? "\"" + utils::to_string(value) + "\"" : utils::to_string(value);
+      return type::is_string<U>() ? "\"" + utils::to_string(value) + "\"" : utils::to_string(value);
     }
 };
 
