@@ -7,6 +7,7 @@
 #include "latte_type.hpp"
 #include "latte_core_hook.hpp"
 #include "latte_core_state.hpp"
+#include "latte_core_options.hpp"
 
 namespace latte {
 namespace core {
@@ -23,7 +24,7 @@ struct latte_test_core {
   virtual std::string depth_string(int depth) const {
     std::string depth_string = "";
     for(auto i = 0; i < depth; i++) {
-      // depth_string += _latte_options.indentation;
+      depth_string += latte_options.indentation;
     }
     return depth_string;
   }
@@ -45,9 +46,6 @@ struct latte_describe : latte_test_core {
     only_ = true;
     _latte_state.add_depth();
     this->execute(function);
-    // if (!this->result_map_.empty()) {
-    //   // this->result_map_.clear();
-    // }
     _latte_state.remove_depth();
   };
 
@@ -63,9 +61,6 @@ struct latte_describe : latte_test_core {
     _latte_state.add_depth();
     if (!only_) {
       this->execute(function);
-      // if (!this->result_map_.empty()) {
-      //   this->result_map_.clear();
-      // }
     }
     _latte_state.remove_depth();
 

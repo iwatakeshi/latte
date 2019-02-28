@@ -1,51 +1,58 @@
 #include "latte.hpp"
-using namespace latte;
+// using namespace latte;
 using latte::style::expect;
+using latte::describe;
+using latte::it;
+using latte::core::debug;
+using latte::before;
+using latte::after;
+using latte::before_each;
+using latte::after_each;
 
 int main() {
   describe([&] {
-    core::debug("describe: A");
+    debug("describe: A");
 
     before([&] {
-      core::debug("before: A");
+      debug("before: A");
     });
 
     after([&] {
-      core::debug("after: A");
+      debug("after: A");
     });
 
     before_each([&] {
-      core::debug("before each: A");
+      debug("before each: A");
     });
 
     it([&] {
-      core::debug("it: A");
+      debug("it: A");
       expect(20).to->equal(20);
       expect(100).to->equal(100);
     });
 
     it([&] {
-      core::debug("it: A - 2");
+      debug("it: A - 2");
       // expect()
     });
 
     describe([&] {
-      core::debug("describe: B");
+      debug("describe: B");
 
       before([&] {
-        core::debug("before: B");
+        debug("before: B");
       });
 
       after([&] {
-        core::debug("after: B");
+        debug("after: B");
       });
 
       it.only([&] {
-        core::debug("it: B");
+        debug("it: B");
       });
 
       it([&] {
-        core::debug("it: B - 2");
+        debug("it: B - 2");
       });
     });
   });
