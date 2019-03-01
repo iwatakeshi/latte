@@ -1,58 +1,42 @@
 #include "latte.hpp"
-// using namespace latte;
-using latte::style::expect;
+using latte::after;
+using latte::after_each;
+using latte::before;
+using latte::before_each;
 using latte::describe;
 using latte::it;
 using latte::core::debug;
-using latte::before;
-using latte::after;
-using latte::before_each;
-using latte::after_each;
+using latte::style::expect;
 
 int main() {
-  describe([&] {
-    debug("describe: A");
-
-    before([&] {
-      debug("before: A");
-    });
-
-    after([&] {
-      debug("after: A");
-    });
-
-    before_each([&] {
-      debug("before each: A");
-    });
-
-    it([&] {
-      debug("it: A");
+  describe("Hello world", [&] {
+    
+    it("should do something", [&] {
       expect(20).to->equal(20);
-      expect(100).to->equal(100);
+      expect(100).to->equal(500);
     });
 
-    it([&] {
-      debug("it: A - 2");
-      // expect()
+    it("should do something 2", [&] {
+
     });
 
-    describe([&] {
-      debug("describe: B");
+    describe("Nothing here", [&] {
+      // debug("describe: B");
 
-      before([&] {
-        debug("before: B");
+      before("", [&] {
+        // debug("before: B");
       });
 
-      after([&] {
-        debug("after: B");
+      after("", [&] {
+        // debug("after: B");
       });
 
-      it.only([&] {
-        debug("it: B");
+      it("should do something 3", [&] {
+        // debug("it: B");
       });
 
-      it([&] {
-        debug("it: B - 2");
+      it("should domething 4", [&] {
+        // debug("it: B - 2");
       });
     });
   });

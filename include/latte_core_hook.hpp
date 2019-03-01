@@ -1,20 +1,16 @@
 #ifndef LATTE_CORE_HOOK_H
 #define LATTE_CORE_HOOK_H
+#include "latte_core_state.hpp"
+#include "latte_type.hpp"
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "latte_core_state.hpp"
-#include "latte_type.hpp"
 
 namespace latte {
 namespace core {
 
 using type::latte_callback;
-
-void debug(std::string message) {
-  std::cout << message << std::endl;
-}
 
 // Base class for before(), after(), before_each(), and after_each()
 struct latte_test_hook {
@@ -23,10 +19,12 @@ struct latte_test_hook {
     name_ = name;
   }
   protected:
+  
   virtual void operator()(std::string description, const latte_callback& hook) {
     description_ = description;
     this->operator()(hook);
   }
+
   virtual void operator()(const latte_callback& hook) {
     // Find the hook's call stack associated with the current describe()
     auto current_call_stack = call_stack.find(parent_depth());
@@ -43,7 +41,6 @@ struct latte_test_hook {
       // Add the local stack
       call_stack[parent_depth()] = stack;
     }
-    // depth_ += 1;
   };
 
   virtual void operator() (int depth) {
@@ -52,10 +49,9 @@ struct latte_test_hook {
       std::vector<latte_callback> stack = current_call_stack->second;
       try {
         if (!stack.empty()) {
-    
+          // The function call is located at the end.
           auto function = stack.back();
           function();
-          // debug("finished calling hook: " + name_);
         }
       }
       catch(const std::exception& e) {
@@ -65,7 +61,6 @@ struct latte_test_hook {
     } else {
       // debug("---: couldn't find hook: " + name_);
     }
-    // depth_ -= 1;
   }
 
   void clear(int depth) {
@@ -76,7 +71,6 @@ struct latte_test_hook {
         current_call_stack->second.pop_back();
       }
     }
-    // depth_ = 0;
   }
   
   std::string name_ = "";
@@ -91,77 +85,81 @@ struct latte_test_hook {
   
 };
 
-struct latte_before : latte_test_hook {
+struct latte_before : public latte_test_hook {
   latte_before(): latte_test_hook("before()") {};
   
-  void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(std::string description, latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
 
-  void operator()(latte_callback&& hook) {
+  virtual void operator()(latte_callback&& hook) {
     latte_test_hook::operator()(hook);
   };
   
   private:
   friend struct latte_describe;
   friend struct latte_it;
-  void operator() (int depth) {
+  
+  virtual void operator() (int depth) {
     latte_test_hook::operator()(depth);
   }
 };
 
-struct latte_before_each : latte_test_hook {
+struct latte_before_each : public latte_test_hook {
   latte_before_each(): latte_test_hook("before_each()") {};
   
-  void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(std::string description, latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
   
-  void operator()(latte_callback&& hook) {
+  virtual void operator()(latte_callback&& hook) {
   latte_test_hook::operator()(hook);
   };
   
   private:
   friend struct latte_describe;
   friend struct latte_it;
-  void operator() (int depth) {
+
+  virtual void operator() (int depth) {
     latte_test_hook::operator()(depth);
   }
 };
 
-struct latte_after : latte_test_hook {
+struct latte_after : public latte_test_hook {
   latte_after(): latte_test_hook("after()") {};
   
-  void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(std::string description, latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
 
-  void operator()(latte_callback&& hook) {
+  virtual void operator()(latte_callback&& hook) {
     latte_test_hook::operator()(hook);
   };
-  void operator() (int depth) {
+
+  private:
+  friend struct latte_describe;
+  friend struct latte_it;
+
+  virtual void operator() (int depth) {
     latte_test_hook::operator()(depth);
   }
-  private:
-  friend struct latte_describe;
-  friend struct latte_it;
 };
 
-struct latte_after_each: latte_test_hook {
+struct latte_after_each: public latte_test_hook {
   latte_after_each(): latte_test_hook("after_each()") {};
   
-  void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(std::string description, latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
 
-  void operator()(latte_callback&& hook) {
+  virtual void operator()(latte_callback&& hook) {
     latte_test_hook::operator()(hook);
   };
 
   private:
   friend struct latte_describe;
   friend struct latte_it;
-  void operator() (int depth) {
+  virtual void operator() (int depth) {
   latte_test_hook::operator()(depth);
   }
 };

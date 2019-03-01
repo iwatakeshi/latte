@@ -1,2 +1,2 @@
 [cxx]
-  cxxflags = -g -std=c++17
+  cxxflags = -g -std=c++17 -Wall -Wextra

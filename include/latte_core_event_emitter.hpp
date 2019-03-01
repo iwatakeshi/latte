@@ -2,188 +2,172 @@
 #define LATTE_CORE_EVENT_EMITTER_H
 //
 // Copyright (c) 2014 Sean Farrell
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy 
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights 
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-// copies of the Software, and to permit persons to whom the Software is 
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
+// The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-
+#include "latte_core_debug.hpp"
+#include "latte_core_comparator.hpp"
+#include <algorithm>
 #include <functional>
-#include <map>
+#include <list>
 #include <memory>
 #include <mutex>
-#include <list>
-#include <algorithm>
-
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
+using std::to_string;
 namespace latte {
 namespace core {
 namespace emitter {
 
+struct latte_event_emitter {
+  latte_event_emitter()
+      : last_listener(0) {}
 
-
-class latte_event_emitter {
-public:
-    
-    latte_event_emitter();
-
-    ~latte_event_emitter();
-
-    template <typename... Args>
-    unsigned int add_listener(unsigned int event_id, std::function<void (Args...)> cb) {
-      if (!cb)
-      {
-          throw std::invalid_argument("latte_event_emitter::add_listener: No callbak provided.");
+  ~latte_event_emitter() {
+    for (auto&& i : listeners) {
+      for (auto&& j : i.second) {
+        delete j;
       }
-      
-      std::lock_guard<std::mutex> lock(mutex);
+      i.second.clear();
+    }
 
-      unsigned int listener_id = ++last_listener;
-      listeners.insert(std::make_pair(event_id, std::make_shared<Listener<>>(listener_id, cb)));
-
-      return listener_id;       
+    listeners.clear();
   }
 
-    unsigned int add_listener(unsigned int event_id, std::function<void ()> cb);
-
-    template<typename LambdaType>
-    unsigned int add_listener(unsigned int event_id, LambdaType lambda) {
-        return add_listener(event_id, make_function(lambda));
+  template <typename... Args>
+  void add_listener(int event_id, std::function<void(Args...)> cb) {
+    if (!cb) {
+      throw std::invalid_argument("latte_event_emitter::add_listener: No callbak provided.");
     }
 
-    template <typename... Args>
-    unsigned int on(unsigned int event_id, std::function<void (Args...)> cb);
-    
-    unsigned int on(unsigned int event_id, std::function<void ()> cb);
+    std::lock_guard<std::mutex> lock(mutex);
+    listeners[event_id].push_back(new Listener<Args...>(cb));
+  }
 
-    template<typename LambdaType>
-    unsigned int on(unsigned int event_id, LambdaType lambda) {
-        return on(event_id, make_function(lambda));
-    }
-
-    void remove_listener(unsigned int listener_id);
-
-    template <typename... Args>
-    void emit(unsigned int event_id, Args... args);
-
-private:
-    struct ListenerBase
-    {
-        ListenerBase() {}
-
-        ListenerBase(unsigned int i)
-        : id(i) {}
-
-        virtual ~ListenerBase() {}
-
-        unsigned int id;
-    };
-
-    template <typename... Args>
-    struct Listener : public ListenerBase
-    {
-        Listener() {}
-
-        Listener(unsigned int i, std::function<void (Args...)> c)
-        : ListenerBase(i), cb(c) {}
-
-        std::function<void (Args...)> cb;
-    };
-
-    std::mutex mutex;
-    unsigned int last_listener;
-    std::multimap<unsigned int, std::shared_ptr<ListenerBase>> listeners;
-
-    latte_event_emitter(const latte_event_emitter&) = delete;  
-    const latte_event_emitter& operator = (const latte_event_emitter&) = delete;
-
-
-
-    // http://stackoverflow.com/a/21000981
-    template <typename T>
-    struct function_traits
-       : public function_traits<decltype(&T::operator())>
-    {};
-
-    template <typename ClassType, typename ReturnType, typename... Args>
-    struct function_traits<ReturnType(ClassType::*)(Args...) const> {
-       typedef std::function<ReturnType (Args...)> f_type;
-    };
-
-    template <typename L> 
-    typename function_traits<L>::f_type make_function(L l){
-      return (typename function_traits<L>::f_type)(l);
-    }
-};
-
-template <typename... Args>
-unsigned int latte_event_emitter::add_listener(unsigned int event_id, std::function<void (Args...)> cb)
-{
-    if (!cb)
-    {
-        throw std::invalid_argument("latte_event_emitter::add_listener: No callbak provided.");
+  void add_listener(int event_id, std::function<void()> cb) {
+    if (!cb) {
+      throw std::invalid_argument("latte_event_emitter::add_listener: No callbak provided.");
     }
 
     std::lock_guard<std::mutex> lock(mutex);
 
-    unsigned int listener_id = ++last_listener;
-    listeners.insert(std::make_pair(event_id, std::make_shared<Listener<Args...>>(listener_id, cb)));
+    listeners[event_id].push_back(new Listener<>(cb));
+  }
 
-    return listener_id;        
-}
+  template <typename LambdaType>
+  void add_listener(int event_id, LambdaType lambda) {
+    add_listener(event_id, make_function(lambda));
+  }
 
-template <typename... Args>
-unsigned int latte_event_emitter::on(unsigned int event_id, std::function<void (Args...)> cb)
-{
-    return add_listener(event_id, cb);
-}
+  template <typename... Args>
+  void on(int event_id, std::function<void(Args...)> cb) {
+    add_listener(event_id, cb);
+  }
 
-template <typename... Args>
-void latte_event_emitter::emit(unsigned int event_id, Args... args)
-{
-    std::list<std::shared_ptr<Listener<Args...>>> handlers;
-    
+  void on(int event_id, std::function<void()> cb) {
+    add_listener(event_id, cb);
+  }
+
+  template <typename LambdaType>
+  void on(int event_id, LambdaType lambda) {
+    return on(event_id, make_function(lambda));
+  }
+
+  void remove_listeners(int event_id) {
+    std::lock_guard<std::mutex> lock(mutex);
+    auto observers = listeners[event_id];
+    if (observers.begin() != observers.end()) {
+      observers.clear();
+    }
+  }
+
+  template <typename... Args>
+  void emit(int event_id, Args... args) {
+    std::vector<Listener<Args...>> handlers;
+
     {
-        std::lock_guard<std::mutex> lock(mutex);
+      std::lock_guard<std::mutex> lock(mutex);
+      handlers.resize(listeners[event_id].size());
 
-        auto range = listeners.equal_range(event_id);
-        handlers.resize(std::distance(range.first, range.second));
-        std::transform(range.first, range.second, handlers.begin(), [] (std::pair<const unsigned int, std::shared_ptr<ListenerBase>> p) {
-            auto l = std::dynamic_pointer_cast<Listener<Args...>>(p.second);
-            if (l)
-            {
-                return l;
-            }
-            else
-            {
-                throw std::logic_error("latte_event_emitter::emit: Invalid event signature.");
-            }
-        });
+      for(auto* listener : listeners[event_id]) {
+        Listener<Args...>* observer = dynamic_cast<Listener<Args...>*>(listener);
+        observer->cb(args...);
+      }
+    }
+  }
+
+  private:
+  struct ListenerBase {
+    ListenerBase() {}
+
+    virtual ~ListenerBase() {}
+  };
+
+  template <typename... Args>
+  struct Listener : public ListenerBase {
+    Listener() {}
+    Listener(std::function<void(Args...)> c)
+        : cb(c) {}
+    ~Listener() {}
+    std::function<void(Args...)> cb;
+    Listener<Args...>& operator=(Listener<Args...>& right) {
+      this->cb = right.cb;
+      return* this;
     }
 
-    for (auto& h : handlers)
-    {
-        h->cb(args...);
-    }        
-}
+    Listener<Args...>& operator=(const Listener<Args...>& right) {
+      this->cb = right.cb;
+      return* this;
+    }
+  };
 
+  std::mutex mutex;
+  int last_listener;
+  std::unordered_map<int, std::vector<ListenerBase*>> listeners;
+
+  latte_event_emitter(const latte_event_emitter&) = delete;
+  const latte_event_emitter& operator=(const latte_event_emitter&) = delete;
+
+  // http://stackoverflow.com/a/21000981
+  template <typename T>
+  struct function_traits
+      : public function_traits<decltype(&T::operator())> {};
+
+  template <typename ClassType, typename ReturnType, typename... Args>
+  struct function_traits<ReturnType (ClassType::*)(Args...) const> {
+    typedef std::function<ReturnType(Args...)> f_type;
+  };
+  
+  template <typename ClassType, typename ReturnType, typename... Args>
+  struct function_traits<ReturnType (ClassType::*)(Args...)> {
+    typedef std::function<ReturnType(Args...)> f_type;
+  };
+
+  template <typename L>
+  typename function_traits<L>::f_type make_function(L l) {
+    return (typename function_traits<L>::f_type)(l);
+  }
+}; // latte_event_emitter
 } // emitter
 } // core
-} // latte
-
-
+} // latt/e
 
 #endif
