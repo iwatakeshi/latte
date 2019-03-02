@@ -31,14 +31,14 @@ struct reporter_spec {
 
     latte_describe_emitter.on(
       describe_event_test_result,
-      [&](std::list<latte_describe_result> test_case) mutable {
+      [&](std::list<latte_describe_result*> test_case) mutable {
         auto describe = test_case.front();
-        std::cout << color::white(describe.description()) << std::endl;
+        std::cout << color::white(describe->description()) << std::endl;
         int count = 0;
         std::vector<std::tuple<std::string, std::string>> local;
-        for (auto it : describe.results()) {
-          std::string description = it.description();
-          switch (it.state()) {
+        for (auto it : describe->results()) {
+          std::string description = it->description();
+          switch (it->state()) {
           case latte_result_state::passing:
             description = color::green("✓ ") + description;
             passing += 1;
@@ -52,7 +52,7 @@ struct reporter_spec {
             failing += 1;
             break;
           }
-          debug(it.depth_string() + description);
+          debug(it->depth_string() + description);
         }
         count++;
         // test.push_back("");
@@ -60,14 +60,14 @@ struct reporter_spec {
 
     latte_describe_emitter.on(
       describe_event_test_end,
-      [&](std::list<latte_describe_result> test_cases) mutable {
+      [&](std::list<latte_describe_result*> test_cases) mutable {
         if (failing > 0) {
           debug(color::red(std::to_string(failing) + " out of " + std::to_string(failing + passing) + " failed") + ":");
-          for (auto&& describe : test_cases) {
+          for (auto describe : test_cases) {
             int count = 0;
-            for (auto it : describe.results()) {
-              if (it.is_failing()) {
-                debug(color::white(std::to_string(count) + ") " + it.description()) + " : " + color::red(it.message()));
+            for (auto it : describe->results()) {
+              if (it->is_failing()) {
+                debug(color::white(std::to_string(count) + ") " + it->description()) + " : " + color::red(it->message()));
               }
               count++;
             }

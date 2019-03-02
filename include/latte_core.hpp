@@ -11,7 +11,7 @@
 #include <iostream>
 #include <list>
 #include <string>
-
+#include <memory>
 namespace latte {
 namespace core {
 
@@ -45,19 +45,33 @@ struct latte_describe : public latte_test_core {
       after_(after), before_each_(before_each), after_each_(after_each), emitter_(emitter) {};
 
   ~latte_describe() {
-    for (auto&& result : this->test_case_) {
-      if (!result.results().empty()) {
-        result.clear();
-      }
-    }
-    this->test_case_.clear();
+    // for (auto current_describe : this->test_cases_) {
+    //   if (!current_describe->results().empty()) {
+    //     for(auto* test_case : current_describe->results()) {
+    //       if (test_case) {
+    //         test_case = nullptr;
+    //         delete test_case;
+    //       }
+    //     }
+    //     current_describe->clear();
+    //   }
+    // }
+    // this->test_cases_.clear();
 
-    for (auto&& result : this->test_cases_) {
-      if (!result.results().empty()) {
-        result.clear();
-      }
-    }
-    this->test_case_.clear();
+    // for (auto* test_suite : this->test_suite_) {
+    //   if (!test_suite->results().empty()) {
+    //     for(auto* test_case : test_suite->results()){
+    //       if (test_case) {
+    //         test_case = nullptr;
+    //         delete test_case;
+    //       }
+    //     }
+    //     test_suite->clear();
+        
+    //     delete test_suite;
+    //   }
+    // }
+    // this->test_cases_.clear();
   }
   /**
    * Restricts the test suite and labels the it as pending suite.
@@ -104,14 +118,14 @@ struct latte_describe : public latte_test_core {
   int child_depth() { return _latte_state.depth() + 1; }
 
   void add_result(std::string description) {
-    auto describe = latte_describe_result(description);
-    describe.depth_string_ = this->depth_string();
-    this->test_case_.push_back(describe);
+    auto describe = std::make_shared<latte_describe_result>(description);
+    describe->depth_string_ = this->depth_string();
+    this->test_cases_.push_back(describe);
   }
 
   private:
-  std::list<latte_describe_result> test_case_;
-  std::list<latte_describe_result> test_cases_;
+  std::list<std::shared_ptr<latte_describe_result>> test_cases_;
+  std::list<std::shared_ptr<latte_describe_result>> test_suite_;
   latte_before* before_ = nullptr;
   latte_after* after_ = nullptr;
   latte_before_each* before_each_ = nullptr;
@@ -130,16 +144,16 @@ struct latte_describe : public latte_test_core {
     this->clear_hooks();
     _latte_state.remove_depth();
 
-    if (!this->test_case_.empty()) {
-      emitter_->emit(event::latte_event::describe_event_test_result, this->test_case_);
-      auto root = this->test_case_.front();
-      this->test_cases_.push_back(root);
-      this->test_case_.pop_front();
-      root.clear();
+    if (!this->test_cases_.empty()) {
+      emitter_->emit(event::latte_event::describe_event_test_result, this->test_cases_);
+      auto root = this->test_cases_.front();
+      this->test_suite_.push_back(root);
+      this->test_cases_.pop_front();
+      root->clear();
     }
 
     if (depth() < 0) {
-      emitter_->emit(event::describe_event_test_end, this->test_cases_);
+      emitter_->emit(event::describe_event_test_end, this->test_suite_);
     }
   }
 
@@ -194,23 +208,24 @@ struct latte_it : public latte_test_core {
 
   void add_result(std::string description, latte_result_state state) {
     // Create the result for it()
-    auto result = latte_it_result(description, "", state);
+    auto result = std::make_shared<latte_it_result>(description, "", state);
     // Set it()'s depth string
-    result.depth_string_ = this->depth_string();
-    this->describe_->test_case_.back().add_result(result);
+    result->depth_string_ = this->depth_string();
+    auto current_describe = this->describe_->test_cases_.back();
+    current_describe->add_result(result);
   }
 
   void add_result(std::string description, std::string message, latte_result_state state) {
     if (state == latte_result_state::failing) {
       // Update the result_state for describe() if a test case fails.
-      this->describe_->test_case_.back().state_ = state;
+      this->describe_->test_cases_.back()->state_ = state;
     }
     // Create the result for it()
-    auto result = latte_it_result(description, message, state);
+    auto result = std::make_shared<latte_it_result>(description, message, state);
     // Set it()'s depth string
-    result.depth_string_ = this->depth_string();
+    result->depth_string_ = this->depth_string();
     // Add the result
-    this->describe_->test_case_.back().add_result(result);
+    this->describe_->test_cases_.back()->add_result(result);
   }
 
   private:

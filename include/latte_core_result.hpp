@@ -3,7 +3,7 @@
 #include <list>
 #include <string>
 #include <tuple>
-
+#include <memory>
 namespace latte {
 namespace core {
 
@@ -24,6 +24,7 @@ enum latte_result_state {
 // };
 
 // latte_result_counter _latte_result_counter;
+
 struct latte_it_result {
   latte_it_result() {}
   latte_it_result(std::string description)
@@ -84,7 +85,7 @@ struct latte_describe_result {
       : description_(description)
       , state_(state) {};
 
-  void add_result(latte_it_result result) {
+  void add_result(std::shared_ptr<latte_it_result> result) {
     results_.push_back(result);
   }
   void add_result(std::string description, latte_result_state state) {
@@ -92,7 +93,7 @@ struct latte_describe_result {
   }
 
   void add_result(std::string description, std::string message, latte_result_state state) {
-    auto result = latte_it_result(description, message, state);
+    auto result = std::make_shared<latte_it_result>(description, message, state);
     results_.push_back(result);
   }
 
@@ -104,7 +105,7 @@ struct latte_describe_result {
     return description_;
   }
 
-  std::list<latte_it_result> results() const {
+  std::list<std::shared_ptr<latte_it_result>> results() {
     return results_;
   }
 
@@ -135,7 +136,7 @@ struct latte_describe_result {
   latte_result_state state_;
   std::string description_ = "";
   std::string depth_string_ = "";
-  std::list<latte_it_result> results_;
+  std::list<std::shared_ptr<latte_it_result>> results_;
 };
 
 } // core
