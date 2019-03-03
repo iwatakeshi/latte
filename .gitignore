@@ -31,7 +31,7 @@
 *.out
 *.app
 
-# Buckaroo
+# Buckaroo & Buck
 .buckd
 .buckconfig.d
 .buckconfig.local

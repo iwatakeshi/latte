@@ -21,25 +21,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-#include "latte_core_comparator.hpp"
-#include "latte_core_debug.hpp"
 #include <algorithm>
 #include <functional>
 #include <list>
+#include <map>
 #include <memory>
 #include <mutex>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <vector>
-using std::to_string;
 namespace latte {
 namespace core {
 namespace emitter {
 
 struct latte_event_emitter {
-  latte_event_emitter() :
-      last_listener(0) {}
+  latte_event_emitter() {}
 
   ~latte_event_emitter() {}
 
@@ -99,10 +92,16 @@ struct latte_event_emitter {
       handlers.resize(listeners[event_id].size());
 
       for (auto listener : listeners[event_id]) {
-        auto observer = std::dynamic_pointer_cast<Listener<Args...>>(listener);
-        observer->cb(args...);
+        std::shared_ptr<Listener<Args...>> observer = std::dynamic_pointer_cast<Listener<Args...>>(listener);
+        if (observer) {
+          observer->cb(args...);
+        }
       }
     }
+  }
+
+  int count () {
+    return listeners.size();
   }
 
   private:
@@ -114,7 +113,9 @@ struct latte_event_emitter {
 
   template <typename... Args>
   struct Listener : public ListenerBase {
-    Listener() {}
+    Listener() {
+      cb = [](Args ...) -> void {};
+    }
     Listener(std::function<void(Args...)> c) :
         cb(c) {}
     ~Listener() {}
@@ -131,7 +132,6 @@ struct latte_event_emitter {
   };
 
   std::mutex mutex;
-  int last_listener;
   std::unordered_map<int, std::vector<std::shared_ptr<ListenerBase>>> listeners;
 
   latte_event_emitter(const latte_event_emitter&) = delete;

@@ -8,11 +8,11 @@ namespace latte {
 namespace core {
 namespace exception {
 
-struct latte_exception : public std::exception {
+struct latte_exception {
   latte_exception(const std::string& message, bool errored = false)
       : message_(message)
       , errored_(errored) {}
-  const char* what() const noexcept { return message_.c_str(); }
+  const std::string what() const noexcept { return message_; }
   bool has_errored() const {
     return errored_;
   }
