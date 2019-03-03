@@ -6,7 +6,7 @@
 namespace latte {
 namespace core {
 
-void debug(std::string message = "") {
+void debug(const std::string& message = "") {
   std::cout << message << std::endl;
 };
 
@@ -32,13 +32,13 @@ void debug(std::wstring message = L"") {
     << message << std::endl;
 };
 
-void debug(std::string message = "") {
+void debug(const std::string& message = "") {
   debug(string_to_wstring(message));
 };
 
 #else
 
-void debug(std::wstring message = L"") {
+void debug(const std::wstring& message = L"") {
   std::wcout << message << std::endl;
 };
 #endif

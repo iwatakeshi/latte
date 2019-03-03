@@ -10,6 +10,6 @@ Cpp11BracedListStyle: false
 IndentCaseLabels: false
 IndentWidth: 2
 NamespaceIndentation: None
-TabWidth: 0
+TabWidth: 2
 UseTab: Never
 BreakConstructorInitializers: AfterColon

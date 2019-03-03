@@ -10,22 +10,20 @@
 namespace latte {
 namespace core {
 
-using type::latte_callback;
-
 // Base class for before(), after(), before_each(), and after_each()
 struct latte_test_hook {
   latte_test_hook(): latte_test_hook("latte_test_hook") {}
-  latte_test_hook(std::string name) {
+  latte_test_hook(const std::string& name) {
     name_ = name;
   }
   protected:
   
-  virtual void operator()(std::string description, const latte_callback& hook) {
+  virtual void operator()(const std::string& description, const type::latte_callback& hook) {
     description_ = description;
     this->operator()(hook);
   }
 
-  virtual void operator()(const latte_callback& hook) {
+  virtual void operator()(const type::latte_callback& hook) {
     // Find the hook's call stack associated with the current describe()
     auto current_call_stack = call_stack.find(parent_depth());
     // We found the stack
@@ -37,7 +35,7 @@ struct latte_test_hook {
       call_stack[parent_depth()] = stack;
     } else  {
       // Create the local stack
-      std::vector<latte_callback> stack { hook };
+      std::vector<type::latte_callback> stack { hook };
       // Add the local stack
       call_stack[parent_depth()] = stack;
     }
@@ -46,7 +44,7 @@ struct latte_test_hook {
   virtual void operator() (int depth) {
     auto current_call_stack = call_stack.find(depth);
     if (current_call_stack != call_stack.end()) {
-      std::vector<latte_callback> stack = current_call_stack->second;
+      std::vector<type::latte_callback> stack = current_call_stack->second;
       try {
         if (!stack.empty()) {
           // The function call is located at the end.
@@ -55,7 +53,7 @@ struct latte_test_hook {
         }
       }
       catch(const std::exception& e) {
-        debug("[latte error::core::hook]: " + std::string(e.what()));
+        // debug("[latte error::core::hook]: " + std::string(e.what()));
       }
 
     } else {
@@ -78,7 +76,7 @@ struct latte_test_hook {
 
   private:
   int parent_depth_ = 0;
-  std::unordered_map<int, std::vector<latte_callback>> call_stack;
+  std::unordered_map<int, std::vector<type::latte_callback>> call_stack;
   int parent_depth () {
     return _latte_state.depth();
   }
@@ -88,11 +86,11 @@ struct latte_test_hook {
 struct latte_before : public latte_test_hook {
   latte_before(): latte_test_hook("before()") {};
   
-  virtual void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(const std::string& description, type::latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
 
-  virtual void operator()(latte_callback&& hook) {
+  virtual void operator()(type::latte_callback&& hook) {
     latte_test_hook::operator()(hook);
   };
   
@@ -108,11 +106,11 @@ struct latte_before : public latte_test_hook {
 struct latte_before_each : public latte_test_hook {
   latte_before_each(): latte_test_hook("before_each()") {};
   
-  virtual void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(const std::string& description, type::latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
   
-  virtual void operator()(latte_callback&& hook) {
+  virtual void operator()(type::latte_callback&& hook) {
   latte_test_hook::operator()(hook);
   };
   
@@ -128,11 +126,11 @@ struct latte_before_each : public latte_test_hook {
 struct latte_after : public latte_test_hook {
   latte_after(): latte_test_hook("after()") {};
   
-  virtual void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(const std::string& description, type::latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
 
-  virtual void operator()(latte_callback&& hook) {
+  virtual void operator()(type::latte_callback&& hook) {
     latte_test_hook::operator()(hook);
   };
 
@@ -148,11 +146,11 @@ struct latte_after : public latte_test_hook {
 struct latte_after_each: public latte_test_hook {
   latte_after_each(): latte_test_hook("after_each()") {};
   
-  virtual void operator()(std::string description, latte_callback&& hook) {
+  virtual void operator()(const std::string& description, type::latte_callback&& hook) {
     latte_test_hook::operator()(description, hook);
   }
 
-  virtual void operator()(latte_callback&& hook) {
+  virtual void operator()(type::latte_callback&& hook) {
     latte_test_hook::operator()(hook);
   };
 

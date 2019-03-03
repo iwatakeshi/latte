@@ -21,36 +21,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-#include "latte_core_debug.hpp"
-#include "latte_core_comparator.hpp"
 #include <algorithm>
 #include <functional>
 #include <list>
+#include <map>
 #include <memory>
 #include <mutex>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <vector>
-using std::to_string;
 namespace latte {
 namespace core {
 namespace emitter {
 
 struct latte_event_emitter {
-  latte_event_emitter()
-      : last_listener(0) {}
+  latte_event_emitter() {}
 
-  ~latte_event_emitter() {
-    for (auto&& i : listeners) {
-      for (auto&& j : i.second) {
-        delete j;
-      }
-      i.second.clear();
-    }
-
-    listeners.clear();
-  }
+  ~latte_event_emitter() {}
 
   template <typename... Args>
   void add_listener(int event_id, std::function<void(Args...)> cb) {
@@ -59,7 +43,7 @@ struct latte_event_emitter {
     }
 
     std::lock_guard<std::mutex> lock(mutex);
-    listeners[event_id].push_back(new Listener<Args...>(cb));
+    listeners[event_id].push_back(std::make_shared<Listener<Args...>>(cb));
   }
 
   void add_listener(int event_id, std::function<void()> cb) {
@@ -69,7 +53,7 @@ struct latte_event_emitter {
 
     std::lock_guard<std::mutex> lock(mutex);
 
-    listeners[event_id].push_back(new Listener<>(cb));
+    listeners[event_id].push_back(std::make_shared<Listener<>>(cb));
   }
 
   template <typename LambdaType>
@@ -107,11 +91,17 @@ struct latte_event_emitter {
       std::lock_guard<std::mutex> lock(mutex);
       handlers.resize(listeners[event_id].size());
 
-      for(auto* listener : listeners[event_id]) {
-        Listener<Args...>* observer = dynamic_cast<Listener<Args...>*>(listener);
-        observer->cb(args...);
+      for (auto listener : listeners[event_id]) {
+        std::shared_ptr<Listener<Args...>> observer = std::dynamic_pointer_cast<Listener<Args...>>(listener);
+        if (observer) {
+          observer->cb(args...);
+        }
       }
     }
+  }
+
+  int count () {
+    return listeners.size();
   }
 
   private:
@@ -123,25 +113,26 @@ struct latte_event_emitter {
 
   template <typename... Args>
   struct Listener : public ListenerBase {
-    Listener() {}
-    Listener(std::function<void(Args...)> c)
-        : cb(c) {}
+    Listener() {
+      cb = [](Args ...) -> void {};
+    }
+    Listener(std::function<void(Args...)> c) :
+        cb(c) {}
     ~Listener() {}
     std::function<void(Args...)> cb;
     Listener<Args...>& operator=(Listener<Args...>& right) {
       this->cb = right.cb;
-      return* this;
+      return *this;
     }
 
     Listener<Args...>& operator=(const Listener<Args...>& right) {
       this->cb = right.cb;
-      return* this;
+      return *this;
     }
   };
 
   std::mutex mutex;
-  int last_listener;
-  std::unordered_map<int, std::vector<ListenerBase*>> listeners;
+  std::unordered_map<int, std::vector<std::shared_ptr<ListenerBase>>> listeners;
 
   latte_event_emitter(const latte_event_emitter&) = delete;
   const latte_event_emitter& operator=(const latte_event_emitter&) = delete;
@@ -155,7 +146,7 @@ struct latte_event_emitter {
   struct function_traits<ReturnType (ClassType::*)(Args...) const> {
     typedef std::function<ReturnType(Args...)> f_type;
   };
-  
+
   template <typename ClassType, typename ReturnType, typename... Args>
   struct function_traits<ReturnType (ClassType::*)(Args...)> {
     typedef std::function<ReturnType(Args...)> f_type;
