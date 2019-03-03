@@ -23,8 +23,9 @@
 //
 #include <algorithm>
 #include <functional>
+#include <vector>
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <mutex>
 namespace latte {
@@ -85,12 +86,8 @@ struct latte_event_emitter {
 
   template <typename... Args>
   void emit(int event_id, Args... args) {
-    std::vector<Listener<Args...>> handlers;
-
     {
       std::lock_guard<std::mutex> lock(mutex);
-      handlers.resize(listeners[event_id].size());
-
       for (auto listener : listeners[event_id]) {
         std::shared_ptr<Listener<Args...>> observer = std::dynamic_pointer_cast<Listener<Args...>>(listener);
         if (observer) {

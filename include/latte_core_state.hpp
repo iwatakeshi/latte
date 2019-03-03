@@ -9,7 +9,7 @@ namespace core {
  namespace state {
   struct latte_state {
    int depth() {
-    return describe_depth - 1;
+    return describe_depth;
    }
    void add_depth() {
     describe_depth += 1;

@@ -1,5 +1,6 @@
 #ifndef LATTE_CORE_H
 #define LATTE_CORE_H
+#include "latte_core_debug.hpp"
 #include "latte_core_event.hpp"
 #include "latte_core_exception.hpp"
 #include "latte_core_hook.hpp"
@@ -90,10 +91,6 @@ struct latte_describe : public latte_test_core {
    * Returns the current depth of the parent
    */
   int depth() { return _latte_state.depth(); }
-  /**
-   * Returns the current depth of the child
-   */
-  int child_depth() { return _latte_state.depth() + 1; }
 
   /**
    * Adds describe()'s result to the list of test suites.
@@ -117,6 +114,7 @@ struct latte_describe : public latte_test_core {
     if (depth() == 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_start);
     }
+    // Set describe()'s depth string
     // Set describe()'s depth
     _latte_state.add_depth();
     // Start the call to other functions.
@@ -128,9 +126,7 @@ struct latte_describe : public latte_test_core {
     if (this->test_cases_.back()->is_pending()) {
       this->test_cases_.back()->state_ = latte_result_state::passing;
     }
-    
     this->test_cases_.back()->time_ = time;
-    // std::cout << std::to_string(time) << std::endl;
     // Clear the call stack at the specified level.
     this->clear_hooks();
     _latte_state.remove_depth();
@@ -138,12 +134,11 @@ struct latte_describe : public latte_test_core {
     if (!this->test_cases_.empty()) {
       event::latte_describe_emitter.emit(event::latte_event::describe_event_test_result, this->test_cases_);
       auto root = this->test_cases_.front();
-      //  std::cout << "TIME!!: " + std::to_string(root->time()) << std::endl;
       this->test_suite_.push_back(root);
       this->test_cases_.pop_front();
     }
 
-    if (depth() < 0) {
+    if (depth() <= 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_end, this->test_suite_);
     }
   }
@@ -194,7 +189,7 @@ struct latte_it : public latte_test_core {
 
   protected:
   std::string depth_string() {
-    return latte_test_core::depth_string(describe_->child_depth());
+    return latte_test_core::depth_string(describe_->depth() + 1);
   }
 
   void add_result(const std::string& description, latte_result_state state) {
