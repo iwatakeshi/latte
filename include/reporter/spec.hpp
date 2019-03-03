@@ -66,7 +66,6 @@ struct reporter_spec {
     describe_results_t passing_test_suites;
     describe_results_t failing_test_suites;
     describe_results_t pending_test_suites;
-    int marker_count = 0;
     int passing_count = 0;
     int failing_count = 0;
     int pending_count = 0;

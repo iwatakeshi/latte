@@ -33,16 +33,14 @@ struct latte_it_result {
     this->description_ = other.description_;
     this->error_ = other.error_;
     this->depth_string_ = other.depth_string_;
+    this->time_ = other.time_;
   }
 
   latte_it_result(const std::string& description) :
-      description_(description){};
+      latte_it_result(description, exception::latte_exception(), latte_result_state::pending, 0.0){};
 
-  latte_it_result(const std::string& description, const exception::latte_exception& error) :
-      latte_it_result(description, error, latte_result_state::pending){};
-
-  latte_it_result(const std::string& description, const exception::latte_exception& error, latte_result_state state) :
-      description_(description), error_(error), state_(state){};
+  latte_it_result(const std::string& description, const exception::latte_exception& error, latte_result_state state, double time) :
+      description_(description), error_(error), state_(state), time_(time) {};
 
   latte_it_result& operator=(const latte_it_result& other) {
     this->state_ = other.state_;
@@ -125,11 +123,11 @@ struct latte_describe_result {
     results_.push_back(result);
   }
   void add_result(const std::string& description, latte_result_state state) {
-    add_result(description, exception::latte_exception(), state);
+    add_result(description, exception::latte_exception(), state, 0.0);
   }
 
-  void add_result(const std::string& description, const exception::latte_exception error, latte_result_state state) {
-    auto result = std::make_shared<latte_it_result>(description, error, state);
+  void add_result(const std::string& description, const exception::latte_exception error, latte_result_state state, double time) {
+    auto result = std::make_shared<latte_it_result>(description, error, state, time);
     results_.push_back(result);
   }
 
