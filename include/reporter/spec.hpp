@@ -51,7 +51,7 @@ struct reporter_spec {
     auto describe_description = test_suite->description();
     std::cout << white(describe_description) << std::endl;
     int failed_counts = 0;
-    for (auto it : test_suite->results()) {
+    for (auto test_case : test_suite->results()) {
       std::string description = test_case->description();
       switch (test_case->state()) {
       case latte_result_state::passing:
