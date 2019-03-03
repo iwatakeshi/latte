@@ -20,7 +20,7 @@ using namespace latte::color;
 using latte::core::debug;
 using latte::core::latte_describe_result;
 using latte::core::latte_result_state;
-using describe_result_t = latte::type::latte_result_t<latte_describe_result>;
+using describe_results_t = latte::type::latte_results_t<latte_describe_result>;
 }
 
 namespace latte {
@@ -32,14 +32,14 @@ struct reporter_spec {
   void operator()() {
     latte_describe_emitter.on(
       describe_event_test_result,
-      std::function<void(describe_result_t)>(process_test_suite));
+      std::function<void(describe_results_t)>(process_test_suite));
 
     latte_describe_emitter.on(
       describe_event_test_end,
-      std::function<void(describe_result_t)>(process_completed));
+      std::function<void(describe_results_t)>(process_completed));
   }
 
-  static void process_test_suite(describe_result_t current_test_suite) {
+  static void process_test_suite(describe_results_t current_test_suite) {
     auto test_suite = current_test_suite.front();
     auto describe_description = test_suite->description();
     std::cout << test_suite->depth_string() + white(describe_description) << std::endl;
@@ -62,10 +62,10 @@ struct reporter_spec {
     }
   }
 
-  static void process_completed(describe_result_t test_suites) {
-    describe_result_t passing_test_suites;
-    describe_result_t failing_test_suites;
-    describe_result_t pending_test_suites;
+  static void process_completed(describe_results_t test_suites) {
+    describe_results_t passing_test_suites;
+    describe_results_t failing_test_suites;
+    describe_results_t pending_test_suites;
     int marker_count = 0;
     int passing_count = 0;
     int failing_count = 0;
@@ -99,7 +99,7 @@ struct reporter_spec {
       for (auto test_suite : failing_test_suites) {
         int failed_count = 0;
         for (auto test_case : test_suite->results()) {
-          debug(white(std::to_string(failed_count) + ") " + test_case->description()) + " : " + red(test_case->message()) + "\n");
+          debug(white(std::to_string(failed_count) + ") " + test_case->description()) + " : " + red(test_case->error().what()) + "\n");
           failed_count++;
         }
       }

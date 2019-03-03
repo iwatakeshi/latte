@@ -33,6 +33,8 @@ struct expect_t {
   expect_t* equal(T expected) {
     bool result = core::comparator::latte_comparator<type_t<T>, type_t<T>>().equal(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -54,6 +56,8 @@ struct expect_t {
   expect_t* equal(U expected) {
     bool result = core::comparator::latte_comparator<type_t<T>, type_t<U>>().equal(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -76,6 +80,8 @@ struct expect_t {
   expect_t* equal(U expected, const core::comparator::latte_comparator<T, U>& comparator) {
     bool result = comparator.equal(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -98,6 +104,8 @@ struct expect_t {
   expect_t* equal(U expected, const type::latte_comparator_callback<T, U>& comparator) {
     bool result = comparator(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -329,6 +337,8 @@ struct expect_t {
   expect_t* strict_equal(T expected) {
     bool result = core::comparator::latte_comparator<type_t<T>, type_t<T>>().strict_equal(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to strictly " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -358,6 +368,8 @@ struct expect_t {
     bool result = core::comparator::latte_comparator<type_t<T>, type_t<U>>().strict_equal(this->actual, expected);
     // bool is_same_type = std::is_same<decltype(this->actual), decltype(expected)>::value;
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to strictly " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -380,6 +392,8 @@ struct expect_t {
   expect_t* strict_equal(U expected, const core::comparator::latte_comparator<T, U>& comparator) {
     bool result = comparator.strict_equal(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to strictly" + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -403,6 +417,8 @@ struct expect_t {
   expect_t* strict_equal(U expected, const type::latte_comparator_callback<T, U>& comparator) {
     bool result = comparator(this->actual, expected);
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       result,
       "Expected " + to_string(this->actual) + " to strictly" + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
@@ -635,6 +651,8 @@ struct expect_t {
 
   expect_t* close_to(double expected, double tolerance) {
     this->eval(
+      to_string(this->actual),
+      "close to " + to_string(expected),
       fabs(this->actual - expected) <= tolerance,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + (to_string(expected) + " within tolerance of " + to_string(tolerance))
     );
@@ -644,6 +662,8 @@ struct expect_t {
 
   expect_t* within(double lower, double upper) {
     this->eval(
+      to_string(this->actual),
+      "within " + to_string(lower) + " and " + to_string(upper),
       this->actual > lower && this->actual < upper,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be above " + to_string(lower) + " and below " + to_string(upper)
     );
@@ -654,6 +674,8 @@ struct expect_t {
 
   expect_t* above(double expected) {
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       this->actual > expected,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be greater than " + to_string(expected)
     );
@@ -669,6 +691,8 @@ struct expect_t {
 
   expect_t* least(double expected) {
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       this->actual >= expected,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be greater than or equal to " + to_string(expected)
     );
@@ -681,6 +705,8 @@ struct expect_t {
 
   expect_t* below(double expected) {
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       this->actual < expected,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be lesser than " + to_string(expected)
     );
@@ -698,6 +724,8 @@ struct expect_t {
 
   expect_t* most(double expected) {
     this->eval(
+      to_string(this->actual),
+      to_string(expected),
       this->actual <= expected,
       "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be less than or equal to " + to_string(expected)
     );
@@ -717,8 +745,10 @@ struct expect_t {
     );
   };
 
-  expect_t* satisfy(bool result, std::string message) {
+  expect_t* satisfy(bool result, std::string actual, std::string expected, std::string message) {
     this->eval(
+      actual,
+      expected,
       result,
       message
     );
@@ -786,12 +816,12 @@ struct expect_t {
     T actual;
     bool negate = false;
 
-    void eval(bool result, const std::string& message) {
+    void eval(std::string actual, std::string expected, bool result, const std::string& message) {
       bool did_pass = (this->negate ? !result : result);
       // Reset the flag
       this->negate = false;
       if (!did_pass) {
-        throw core::exception::latte_exception { message, did_pass };
+        throw core::exception::latte_exception { actual, expected, message, did_pass };
       }
     };
 

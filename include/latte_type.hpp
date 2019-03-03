@@ -12,7 +12,10 @@ template <typename T, typename U>
 using latte_comparator_callback = std::function<bool(T, U)>;
 
 template <typename T>
-using latte_result_t = std::list<std::shared_ptr<T>>;
+using latte_results_t = std::list<std::shared_ptr<T>>;
+
+template <typename T>
+using latte_result_t = std::shared_ptr<T>;
 
 template <class T>
 struct is_integer_
