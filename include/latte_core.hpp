@@ -21,20 +21,21 @@ namespace core {
 struct latte_test_core {
 
   protected:
-  virtual void execute(const type::latte_callback&){};
-  virtual void only() {}
-  void only(const std::string&, const type::latte_callback&){};
-  virtual void operator()() {}
-  virtual void operator()(const type::latte_callback&) {}
-  virtual std::string depth_string() { return ""; };
-  virtual std::string depth_string(int depth) const {
+  virtual void execute(const type::latte_callback&) {};
+  virtual void execute(const std::string&, const type::latte_callback&) {};
+  virtual void only(const std::string&) = 0;
+  virtual void only(const std::string&, const type::latte_callback&) = 0;
+  virtual void operator()() = 0;
+  virtual void operator()(const std::string&) = 0;
+  virtual void operator()(const std::string&, const type::latte_callback&) = 0;
+  virtual std::string depth_string() = 0;
+  std::string depth_string(int depth) const {
     std::string depth_string = "";
     for (auto i = 0; i < depth; i++) {
       depth_string += latte_options.indentation;
     }
     return depth_string;
   }
-  virtual void operator()(const std::string&, const type::latte_callback&) {}
 };
 
 struct latte_describe : public latte_test_core {
@@ -54,7 +55,7 @@ struct latte_describe : public latte_test_core {
   /**
    * Restricts the test suite and labels the it as pending suite.
    */
-  void only(const std::string& description) {
+  virtual void only(const std::string& description) {
     only_map_[depth()] = true;
     add_result(description);
   }
@@ -62,17 +63,17 @@ struct latte_describe : public latte_test_core {
   /**
    * Restricts and runs the test suite.
    */
-  void only(const std::string& description, const type::latte_callback& function) {
+  virtual void only(const std::string& description, const type::latte_callback& function) {
     only(description);
     this->execute(function);
   };
 
-  void operator()() {}
+  virtual void operator()() {}
 
   /**
    * Labels the test suite as pending.
    */
-  void operator()(const std::string& description) {
+  virtual void operator()(const std::string& description) {
     if (!only_map_[this->depth()]) {
       add_result(description);
     }
@@ -111,8 +112,9 @@ struct latte_describe : public latte_test_core {
   latte_before_each* before_each_ = nullptr;
   latte_after_each* after_each_ = nullptr;
   std::unordered_map<int, bool> only_map_;
-
-  void execute(const type::latte_callback& function) {
+  
+  using latte_test_core::execute;
+  virtual void execute(const type::latte_callback& function) {
     if (depth() == 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_start);
     }
@@ -158,8 +160,6 @@ struct latte_describe : public latte_test_core {
   std::string depth_string() {
     return latte_test_core::depth_string(depth());
   };
-
-  bool only_ = false;
 };
 
 struct latte_it : public latte_test_core {
@@ -168,21 +168,21 @@ struct latte_it : public latte_test_core {
         event::latte_it_emitter.emit(event::latte_event::it_event_init);
       }
 
-  void only(const std::string& description) {
+  virtual void only(const std::string& description) {
     only_ = true;
-    add_result(description, latte_result_state::pending);
+    add_result(description);
   };
 
-  void only(const std::string& description, const type::latte_callback& function) {
+  virtual void only(const std::string& description, const type::latte_callback& function) {
     only_ = true;
     execute(description, function);
   };
 
-  void operator()() {}
+  virtual void operator()() {}
 
-  void operator()(const std::string& description) {
+  virtual void operator()(const std::string& description) {
     if (!only_) {
-      add_result(description, latte_result_state::pending);
+      add_result(description);
     }
   }
 
@@ -197,9 +197,9 @@ struct latte_it : public latte_test_core {
     return latte_test_core::depth_string(describe_->depth() + 1);
   }
 
-  void add_result(const std::string& description, latte_result_state state) {
+  void add_result(const std::string& description) {
     // Create the result for it()
-    auto result = std::make_shared<latte_it_result>(description, exception::latte_exception(), state);
+    auto result = std::make_shared<latte_it_result>(description);
     // Set it()'s depth string
     result->depth_string_ = this->depth_string();
     auto current_describe = this->describe_->test_cases_.back();
@@ -213,7 +213,7 @@ struct latte_it : public latte_test_core {
       this->describe_->test_cases_.back()->state_ = state;
     }
     // Create the result for it()
-    auto result = std::make_shared<latte_it_result>(description, error, state);
+    auto result = std::make_shared<latte_it_result>(description, error, state, time);
     // Set it()'s depth string
     result->depth_string_ = this->depth_string();
     // Add the result
@@ -226,8 +226,9 @@ struct latte_it : public latte_test_core {
   latte_describe* describe_ = nullptr;
   bool only_ = false;
 
+  using latte_test_core::execute;
   // Executes the hooks and the callback method
-  void execute(const std::string& description, const type::latte_callback& function) {
+  virtual void execute(const std::string& description, const type::latte_callback& function) {
     event::latte_it_emitter.emit(event::latte_event::it_event_test_start);
     auto result_state = latte_result_state::pending;
     exception::latte_exception error;

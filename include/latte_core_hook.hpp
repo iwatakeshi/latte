@@ -75,7 +75,6 @@ struct latte_test_hook {
   std::string description_ = "";
 
   private:
-  int parent_depth_ = 0;
   std::unordered_map<int, std::vector<type::latte_callback>> call_stack;
   int parent_depth () {
     return _latte_state.depth();

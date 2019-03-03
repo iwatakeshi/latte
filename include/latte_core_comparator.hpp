@@ -50,7 +50,7 @@ template <typename T>
 inline bool __equal(T a, T b) { return a == b; };
 
 template <typename T, typename U>
-inline bool __equal(T a, U b) {
+inline bool __equal(T, U) {
   // std::string a_t = type_name<decltype(a)>();
   // std::string b_t = type_name<decltype(b)>();
   // _mocha_util.debug(
@@ -66,7 +66,7 @@ inline bool __strict_equal(T a, T b) { return a == b; }
 // Strict comparison of different types
 // will default to false
 template<typename T, typename U>
-inline bool __strict_equal(T a, U b) {
+inline bool __strict_equal(T, U) {
   return false;
 };
 
