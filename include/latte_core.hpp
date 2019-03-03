@@ -46,7 +46,9 @@ struct latte_describe : public latte_test_core {
       before_(before),
       after_(after),
       before_each_(before_each),
-      after_each_(after_each){};
+      after_each_(after_each){
+        event::latte_describe_emitter.emit(event::latte_event::describe_event_init);
+      };
 
   ~latte_describe() = default;
   /**
@@ -141,6 +143,7 @@ struct latte_describe : public latte_test_core {
     if (depth() <= 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_end, this->test_suite_);
     }
+    event::latte_describe_emitter.emit(event::describe_event_test_incremental_result, this->test_suite_);
   }
 
   void clear_hooks() {
@@ -161,7 +164,9 @@ struct latte_describe : public latte_test_core {
 
 struct latte_it : public latte_test_core {
   latte_it(latte_describe* describe) :
-      describe_(describe) {}
+      describe_(describe) {
+        event::latte_it_emitter.emit(event::latte_event::it_event_init);
+      }
 
   void only(const std::string& description) {
     only_ = true;
@@ -194,24 +199,27 @@ struct latte_it : public latte_test_core {
 
   void add_result(const std::string& description, latte_result_state state) {
     // Create the result for it()
-    auto result = std::make_shared<latte_it_result>(description, "", state);
+    auto result = std::make_shared<latte_it_result>(description, exception::latte_exception(), state);
     // Set it()'s depth string
     result->depth_string_ = this->depth_string();
     auto current_describe = this->describe_->test_cases_.back();
     current_describe->add_result(result);
+    event::latte_it_emitter.emit(event::latte_event::it_event_test_result, current_describe);
   }
 
-  void add_result(const std::string& description, std::string message, latte_result_state state, double time) {
+  void add_result(const std::string& description, exception::latte_exception error, latte_result_state state, double time) {
     if (state == latte_result_state::failing) {
       // Update the result_state for describe() if a test case fails.
       this->describe_->test_cases_.back()->state_ = state;
     }
     // Create the result for it()
-    auto result = std::make_shared<latte_it_result>(description, message, state);
+    auto result = std::make_shared<latte_it_result>(description, error, state);
     // Set it()'s depth string
     result->depth_string_ = this->depth_string();
     // Add the result
     this->describe_->test_cases_.back()->add_result(result);
+
+    event::latte_it_emitter.emit(event::latte_event::it_event_test_result, result);
   }
 
   private:
@@ -220,8 +228,9 @@ struct latte_it : public latte_test_core {
 
   // Executes the hooks and the callback method
   void execute(const std::string& description, const type::latte_callback& function) {
+    event::latte_it_emitter.emit(event::latte_event::it_event_test_start);
     auto result_state = latte_result_state::pending;
-    std::string message = "";
+    exception::latte_exception error;
     // Call before and before_each hooks
     describe_->before_->operator()(describe_->depth());
     describe_->before_each_->operator()(describe_->depth());
@@ -233,10 +242,10 @@ struct latte_it : public latte_test_core {
       result_state = latte_result_state::passing;
     } catch (const exception::latte_exception& e) {
       result_state = latte_result_state::failing;
-      message = e.what();
+      error = e;
     }
 
-    add_result(description, message, result_state, time);
+    add_result(description, error, result_state, time);
 
     // Call after and after_each hooks
     describe_->after_->operator()(describe_->depth());
@@ -244,6 +253,7 @@ struct latte_it : public latte_test_core {
     // We are done with before and after so don't let it() call it again.
     describe_->before_->clear(describe_->depth());
     describe_->after_->clear(describe_->depth());
+    event::latte_it_emitter.emit(event::latte_event::it_event_test_end, this->describe_->test_cases_.back());
   }
 };
 } // core

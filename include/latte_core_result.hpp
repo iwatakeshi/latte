@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include "latte_core_exception.hpp"
 namespace latte {
 namespace core {
 
@@ -30,23 +31,23 @@ struct latte_it_result {
   latte_it_result(const latte_it_result& other) {
     this->state_ = other.state_;
     this->description_ = other.description_;
-    this->message_ = other.message_;
+    this->error_ = other.error_;
     this->depth_string_ = other.depth_string_;
   }
 
   latte_it_result(const std::string& description) :
       description_(description){};
 
-  latte_it_result(const std::string& description, const std::string& message) :
-      latte_it_result(description, message, latte_result_state::pending){};
+  latte_it_result(const std::string& description, const exception::latte_exception& error) :
+      latte_it_result(description, error, latte_result_state::pending){};
 
-  latte_it_result(const std::string& description, const std::string& message, latte_result_state state) :
-      description_(description), message_(message), state_(state){};
+  latte_it_result(const std::string& description, const exception::latte_exception& error, latte_result_state state) :
+      description_(description), error_(error), state_(state){};
 
   latte_it_result& operator=(const latte_it_result& other) {
     this->state_ = other.state_;
     this->description_ = other.description_;
-    this->message_ = other.message_;
+    this->error_ = other.error_;
     this->depth_string_ = other.depth_string_;
     this->time_ = other.time_;
     return *this;
@@ -64,8 +65,8 @@ struct latte_it_result {
     return description_;
   }
 
-  const std::string message() {
-    return message_;
+  const exception::latte_exception error() {
+    return error_;
   }
 
   bool is_passing() {
@@ -89,7 +90,7 @@ struct latte_it_result {
 
   private:
   std::string description_ = "";
-  std::string message_ = "";
+  exception::latte_exception error_;
   latte_result_state state_;
   std::string depth_string_ = "";
   double time_ = 0;
@@ -124,11 +125,11 @@ struct latte_describe_result {
     results_.push_back(result);
   }
   void add_result(const std::string& description, latte_result_state state) {
-    add_result(description, "", state);
+    add_result(description, exception::latte_exception(), state);
   }
 
-  void add_result(const std::string& description, const std::string& message, latte_result_state state) {
-    auto result = std::make_shared<latte_it_result>(description, message, state);
+  void add_result(const std::string& description, const exception::latte_exception error, latte_result_state state) {
+    auto result = std::make_shared<latte_it_result>(description, error, state);
     results_.push_back(result);
   }
 
