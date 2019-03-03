@@ -1,9 +1,7 @@
 #ifndef LATTE_CORE_DEFINITION_H
 #define LATTE_CORE_DEFINITION_H
-#include "latte_core_result.hpp"
 #include <functional>
 #include <list>
-#include <tuple>
 #include <type_traits>
 namespace latte {
 namespace type {
@@ -12,6 +10,9 @@ using latte_callback = std::function<void()>;
 
 template <typename T, typename U>
 using latte_comparator_callback = std::function<bool(T, U)>;
+
+template <typename T>
+using latte_result_t = std::list<std::shared_ptr<T>>;
 
 template <class T>
 struct is_integer_

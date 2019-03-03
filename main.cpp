@@ -18,7 +18,7 @@ int main() {
         expect(100).to->equal(500);
       });
 
-      describe.only("What! Cool!", [&] {
+      describe("What! Cool!", [&] {
         it("should do something 2", [&] {
 
         });
@@ -26,6 +26,9 @@ int main() {
 
       describe("Test", [&]() {
         it("should do something 3", [&] {
+
+        });
+        describe("Test again!", [&] () {
 
         });
       });

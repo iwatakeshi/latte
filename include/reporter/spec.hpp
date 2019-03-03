@@ -4,6 +4,7 @@
 #include "../latte_core_debug.hpp"
 #include "../latte_core_event.hpp"
 #include "../latte_core_result.hpp"
+#include "../latte_type.hpp"
 #include <functional>
 #include <iostream>
 #include <list>
@@ -12,50 +13,42 @@
 #include <tuple>
 #include <vector>
 
+namespace {
+
+using namespace latte::core::event;
+using namespace latte::color;
+using latte::core::debug;
+using latte::core::latte_describe_result;
+using latte::core::latte_result_state;
+using describe_result_t = latte::type::latte_result_t<latte_describe_result>;
+}
+
 namespace latte {
 namespace reporter {
 
 struct reporter_spec {
-  reporter_spec(){};
+  reporter_spec() {};
 
   void operator()() {
-
-    using latte::core::debug;
-    using latte::core::latte_describe_result;
-    using latte::core::latte_result_state;
-    using latte::core::event::describe_event_test_end;
-    using latte::core::event::describe_event_test_result;
-    using latte::core::event::describe_event_test_start;
-    using latte::core::event::latte_describe_emitter;
-    using namespace latte::color;
     latte_describe_emitter.on(
       describe_event_test_result,
-      std::function<void(std::list<std::shared_ptr<latte_describe_result>>)>(process_test_suite));
+      std::function<void(describe_result_t)>(process_test_suite));
 
     latte_describe_emitter.on(
       describe_event_test_end,
-      std::function<void(std::list<std::shared_ptr<latte_describe_result>>)>(process_completed));
+      std::function<void(describe_result_t)>(process_completed));
   }
 
-  static void process_test_suite(std::list<std::shared_ptr<latte::core::latte_describe_result>> current_test_suite) {
-    using latte::core::debug;
-    using latte::core::latte_describe_result;
-    using latte::core::latte_result_state;
-    using latte::core::event::describe_event_test_end;
-    using latte::core::event::describe_event_test_result;
-    using latte::core::event::describe_event_test_start;
-    using latte::core::event::latte_describe_emitter;
-    using namespace latte::color;
-
+  static void process_test_suite(describe_result_t current_test_suite) {
     auto test_suite = current_test_suite.front();
     auto describe_description = test_suite->description();
-    std::cout << white(describe_description) << std::endl;
+    std::cout << test_suite->depth_string() + white(describe_description) << std::endl;
     int failed_counts = 0;
     for (auto test_case : test_suite->results()) {
       std::string description = test_case->description();
       switch (test_case->state()) {
       case latte_result_state::passing:
-        description = green("✓ ") + description;
+        description = green("✓") + " " + description;
         break;
       case latte_result_state::pending:
         description = description;
@@ -69,20 +62,10 @@ struct reporter_spec {
     }
   }
 
-  static void process_completed(std::list<std::shared_ptr<latte::core::latte_describe_result>> test_suites) {
-
-    using latte::core::debug;
-    using latte::core::latte_describe_result;
-    using latte::core::latte_result_state;
-    using latte::core::event::describe_event_test_end;
-    using latte::core::event::describe_event_test_result;
-    using latte::core::event::describe_event_test_start;
-    using latte::core::event::latte_describe_emitter;
-    using namespace latte::color;
-
-    std::vector<std::shared_ptr<latte_describe_result>> passing_test_suites;
-    std::vector<std::shared_ptr<latte_describe_result>> failing_test_suites;
-    std::vector<std::shared_ptr<latte_describe_result>> pending_test_suites;
+  static void process_completed(describe_result_t test_suites) {
+    describe_result_t passing_test_suites;
+    describe_result_t failing_test_suites;
+    describe_result_t pending_test_suites;
     int marker_count = 0;
     int passing_count = 0;
     int failing_count = 0;
