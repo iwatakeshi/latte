@@ -18,7 +18,7 @@
 namespace latte {
 namespace core {
 
-struct latte_test_core {
+struct latte_test {
 
   protected:
   virtual void execute(const type::latte_callback&) {};
@@ -38,7 +38,7 @@ struct latte_test_core {
   }
 };
 
-struct latte_describe : public latte_test_core {
+struct latte_describe : public latte_test {
   latte_describe(
     latte_before* before,
     latte_after* after,
@@ -113,7 +113,7 @@ struct latte_describe : public latte_test_core {
   latte_after_each* after_each_ = nullptr;
   std::unordered_map<int, bool> only_map_;
   
-  using latte_test_core::execute;
+  using latte_test::execute;
   virtual void execute(const type::latte_callback& function) {
     if (depth() == 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_start);
@@ -158,11 +158,11 @@ struct latte_describe : public latte_test_core {
   friend struct latte_it;
 
   std::string depth_string() {
-    return latte_test_core::depth_string(depth());
+    return latte_test::depth_string(depth());
   };
 };
 
-struct latte_it : public latte_test_core {
+struct latte_it : public latte_test {
   latte_it(latte_describe* describe) :
       describe_(describe) {
         event::latte_it_emitter.emit(event::latte_event::it_event_init);
@@ -194,7 +194,7 @@ struct latte_it : public latte_test_core {
 
   protected:
   std::string depth_string() {
-    return latte_test_core::depth_string(describe_->depth() + 1);
+    return latte_test::depth_string(describe_->depth() + 1);
   }
 
   void add_result(const std::string& description) {
@@ -226,7 +226,7 @@ struct latte_it : public latte_test_core {
   latte_describe* describe_ = nullptr;
   bool only_ = false;
 
-  using latte_test_core::execute;
+  using latte_test::execute;
   // Executes the hooks and the callback method
   virtual void execute(const std::string& description, const type::latte_callback& function) {
     event::latte_it_emitter.emit(event::latte_event::it_event_test_start);
