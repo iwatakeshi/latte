@@ -5,8 +5,10 @@
 // using latte::after;
 // using latte::before_each;
 // using latte::after_each;
-using latte::describe;
-using latte::it;
+// using latte::describe;
+// using latte::it;
+// using latte::style::expect;
+using namespace latte;
 using latte::style::expect;
 std::string greet() {
   return "hey";
