@@ -275,7 +275,7 @@ struct latte_it : public latte_test {
   // Executes the hooks and the callback method
   virtual void execute(const std::string& description, const type::latte_callback& function) {
     event::latte_it_emitter.emit(event::latte_event::it_event_test_start);
-    auto result_state = latte_result_state::pending;
+    auto result_state = latte_result_state::passing;
     exception::latte_exception error;
     // Call before and before_each hooks
     describe_->before_->operator()(describe_->depth());
@@ -285,7 +285,6 @@ struct latte_it : public latte_test {
       time = bench::time([&] () {
         function();
       });
-      result_state = latte_result_state::passing;
     } catch (const exception::latte_exception& e) {
       result_state = latte_result_state::failing;
       error = e;
