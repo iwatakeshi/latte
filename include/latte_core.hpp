@@ -50,9 +50,9 @@ struct latte_describe : public latte_test {
       before_(before),
       after_(after),
       before_each_(before_each),
-      after_each_(after_each){
-        event::latte_describe_emitter.emit(event::latte_event::describe_event_init);
-      };
+      after_each_(after_each) {
+    event::latte_describe_emitter.emit(event::latte_event::describe_event_init);
+  };
 
   ~latte_describe() = default;
   virtual void lock() {
@@ -109,7 +109,14 @@ struct latte_describe : public latte_test {
    * Adds describe()'s result to the list of test suites.
    */
   void add_result(const std::string& description) {
-    auto describe = std::make_shared<latte_describe_result>(description, latte_result_state::pending);
+    add_result(description, latte_result_state::pending);
+  }
+
+  /**
+   * Adds describe()'s result to the list of test suites.
+   */
+  void add_result(const std::string& description, latte_result_state state) {
+    auto describe = std::make_shared<latte_describe_result>(description, state);
     describe->depth_string_ = this->depth_string();
     this->test_cases_.push_back(describe);
   }
@@ -122,7 +129,7 @@ struct latte_describe : public latte_test {
   latte_before_each* before_each_ = nullptr;
   latte_after_each* after_each_ = nullptr;
   std::unordered_map<int, bool> only_map_;
-  
+
   virtual void pend(const std::string& description) {
     if (depth() == 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_start);
@@ -141,7 +148,6 @@ struct latte_describe : public latte_test {
       event::latte_describe_emitter.emit(event::describe_event_test_end, this->test_suite_);
     }
     event::latte_describe_emitter.emit(event::describe_event_test_incremental_result, this->test_suite_);
-
   }
 
   using latte_test::execute;
@@ -150,7 +156,7 @@ struct latte_describe : public latte_test {
       event::latte_describe_emitter.emit(event::describe_event_test_start);
     }
 
-    add_result(description);
+    add_result(description, latte_result_state::passing);
     // Set describe()'s depth string
     _latte_state.add_depth();
     // Start the call to other functions.
@@ -194,8 +200,8 @@ struct latte_describe : public latte_test {
 struct latte_it : public latte_test {
   latte_it(latte_describe* describe) :
       describe_(describe) {
-        event::latte_it_emitter.emit(event::latte_event::it_event_init);
-      }
+    event::latte_it_emitter.emit(event::latte_event::it_event_init);
+  }
 
   virtual void lock() {
     locked = true;
@@ -206,12 +212,12 @@ struct latte_it : public latte_test {
   }
 
   virtual void only(const std::string& description) {
-   lock();
+    lock();
     this->pend(description);
   };
 
   virtual void only(const std::string& description, const type::latte_callback& function) {
-   lock();
+    lock();
     execute(description, function);
   };
 
@@ -219,7 +225,7 @@ struct latte_it : public latte_test {
 
   virtual void operator()(const std::string& description) {
     if (!is_locked()) {
-     this->pend(description);
+      this->pend(description);
     }
   }
 
@@ -245,13 +251,11 @@ struct latte_it : public latte_test {
   }
 
   void add_result(const std::string& description, exception::latte_exception error, latte_result_state state, double time) {
-    
-    if (state == latte_result_state::passing) {
-      this->describe_->test_cases_.back()->state_ = state;
-    } else if (state == latte_result_state::failing) {
+
+    if (state == latte_result_state::failing) {
       // Update the result_state for describe() if a test case fails.
       this->describe_->test_cases_.back()->state_ = state;
-    } 
+    }
     // Create the result for it()
     auto result = std::make_shared<latte_it_result>(description, error, state, time);
     // Set it()'s depth string
@@ -282,7 +286,7 @@ struct latte_it : public latte_test {
     describe_->before_each_->operator()(describe_->depth());
     double time = 0;
     try {
-      time = bench::time([&] () {
+      time = bench::time([&]() {
         function();
       });
     } catch (const exception::latte_exception& e) {
