@@ -1,4 +1,8 @@
-manifest = "416dbcf35e0cdc43355d9622521f42e361e4b72fe3d4b4aa360f27631d231b0d"
+manifest = "0e8e6b787476a9a4a869a5d2aeed3fc5e42a1505f4f610e2441c630f77259905"
+
+[[dependency]]
+package = "github.com/iwatakeshi/bench"
+target = "//:bench"
 
 [[dependency]]
 package = "github.com/iwatakeshi/to_string"
@@ -6,8 +10,8 @@ target = "//:to_string"
 
 [lock."github.com/iwatakeshi/bench"]
 versions = [ "branch=master" ]
-revision = "2c62e398e552c1a37d066a6d2681f25b65fcfdc5"
+revision = "0fe9e1605ee18500fed023ef364abc1cbf322d0a"
 
 [lock."github.com/iwatakeshi/to_string"]
 versions = [ "tag=1.0.0-alpha" ]
-revision = "c22655357fbe44841c79acf12fd7f60d6d317952"
+revision = "b02f78ebbaf245b137e9bb1e4299aced026910a3"

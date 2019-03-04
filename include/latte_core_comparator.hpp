@@ -136,7 +136,7 @@ inline bool __equal<>(bool a, double b) { return ((int)(b) == 0 || (int)(b) == 1
 template<>
 inline bool __equal<>(bool a, long double b) { return ((int)(b) == 0 || (int)(b) == 1) && a == (int)(b); };
 template<>
-inline bool __equal<>(bool a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(bool a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(bool, nullptr_t) { return false; };
 
@@ -174,7 +174,7 @@ inline bool __equal<>(unsigned short int a, double b) { return a == (unsigned sh
 template<>
 inline bool __equal<>(unsigned short int a, long double b) { return a == (unsigned short int)(std::round(b)); };
 template<>
-inline bool __equal<>(unsigned short int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(unsigned short int a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(unsigned short int, nullptr_t) { return false; };
 
@@ -212,7 +212,7 @@ inline bool __equal<>(short int a, double b) { return a == (short int)(std::roun
 template<>
 inline bool __equal<>(short int a, long double b) { return a == (short int)(std::round(b)); };
 template<>
-inline bool __equal<>(short int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(short int a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(short int, nullptr_t) { return false; };
 
@@ -252,7 +252,7 @@ inline bool __equal<>(unsigned int a, double b) { return a == (unsigned int)(std
 template<>
 inline bool __equal<>(unsigned int a, long double b) { return a == (unsigned int)(std::round(b)); }
 template<>
-inline bool __equal<>(unsigned int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(unsigned int a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(unsigned int, nullptr_t) { return false; }
 
@@ -292,7 +292,7 @@ inline bool __equal<>(int a, double b) { return a == (int)(std::round(b)); };
 template<>
 inline bool __equal<>(int a, long double b) { return a == (int)(std::round(b)); }
 template<>
-inline bool __equal<>(int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(int a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(int, nullptr_t) { return false; }
 
@@ -334,7 +334,7 @@ inline bool __equal<>(unsigned long int a, double b) { return a == (unsigned lon
 template<>
 inline bool __equal<>(unsigned long int a, long double b) { return a == (unsigned long int)(std::round(b)); }
 template<>
-inline bool __equal<>(unsigned long int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(unsigned long int a, std::string b) { return stdlib::to_string(a) == b; };
 
 /**
  * ========================
@@ -372,7 +372,7 @@ inline bool __equal<>(long int a, double b) { return a == (long int)(std::round(
 template<>
 inline bool __equal<>(long int a, long double b) { return a == (long int)(std::round(b)); }
 template<>
-inline bool __equal<>(long int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(long int a, std::string b) { return stdlib::to_string(a) == b; };
 
 
 /**
@@ -411,7 +411,7 @@ inline bool __equal<>(unsigned long long int a, double b) { return a == (unsigne
 template<>
 inline bool __equal<>(unsigned long long int a, long double b) { return a == (unsigned long long int)(std::round(b)); }
 template<>
-inline bool __equal<>(unsigned long long int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(unsigned long long int a, std::string b) { return stdlib::to_string(a) == b; };
 
 /**
  * ========================
@@ -449,7 +449,7 @@ inline bool __equal<>(long long int a, double b) { return a == (long long int)(s
 template<>
 inline bool __equal<>(long long int a, long double b) { return a == (long long int)(std::round(b)); }
 template<>
-inline bool __equal<>(long long int a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(long long int a, std::string b) { return stdlib::to_string(a) == b; };
 
 /**
  * ========================
@@ -485,7 +485,7 @@ inline bool __equal<>(unsigned char a, double b) { return __equal(int(std::round
 template<>
 inline bool __equal<>(unsigned char a, long double b) { return __equal(int(std::round(b)), a); }
 template<>
-inline bool __equal<>(unsigned char a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(unsigned char a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(unsigned char, nullptr_t) { return false; }
 
@@ -523,7 +523,7 @@ inline bool __equal<>(char a, double b) { return __equal(int(std::round(b)), a);
 template<>
 inline bool __equal<>(char a, long double b) { return __equal(int(std::round(b)), a); }
 template<>
-inline bool __equal<>(char a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(char a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(char, nullptr_t) { return false; }
 
@@ -561,7 +561,7 @@ inline bool __equal<>(wchar_t, double) { return false; };
 template<>
 inline bool __equal<>(wchar_t, long double) { return false; }
 template<>
-inline bool __equal<>(wchar_t a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(wchar_t a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(wchar_t, nullptr_t) { return false; }
 
@@ -599,7 +599,7 @@ inline bool __equal<>(float a, double b) { return a == (float)(b); };
 template<>
 inline bool __equal<>(float a, long double b) { return a == (float)(b); }
 template<>
-inline bool __equal<>(float a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(float a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(float, nullptr_t) { return false; }
 
@@ -637,7 +637,7 @@ inline bool __equal<>(double a, float b) { return __equal(b, a); };
 template<>
 inline bool __equal<>(double a, long double b) { return a == (double)(b); }
 template<>
-inline bool __equal<>(double a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(double a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(double, nullptr_t) { return false; }
 
@@ -673,7 +673,7 @@ inline bool __equal<>(long double a, wchar_t b) { return __equal(b, a); };
 template<>
 inline bool __equal<>(long double a, float b) { return __equal(b, a); };
 template<>
-inline bool __equal<>(long double a, std::string b) { return utils::to_string(a) == b; };
+inline bool __equal<>(long double a, std::string b) { return stdlib::to_string(a) == b; };
 template<>
 inline bool __equal<>(long double, nullptr_t) { return false; };
 

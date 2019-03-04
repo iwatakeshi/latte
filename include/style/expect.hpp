@@ -827,7 +827,7 @@ struct expect_t {
 
     template<typename U>
     std::string to_string(U value) {
-      return type::is_string<U>() ? "\"" + utils::to_string(value) + "\"" : utils::to_string(value);
+      return type::is_string<U>() ? "\"" + stdlib::to_string(value) + "\"" : stdlib::to_string(value);
     }
 };
 
