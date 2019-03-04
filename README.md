@@ -1,6 +1,6 @@
 # latte
 
-A C++ testing framework that's simple as sipping a latte.
+A C++ testing framework that's as easy as sipping a latte.
 
 
 ![](images/example.png)
