@@ -21,13 +21,16 @@ namespace core {
 struct latte_test {
 
   protected:
-  virtual void execute(const type::latte_callback&) {};
-  virtual void execute(const std::string&, const type::latte_callback&) {};
+  virtual void lock() = 0;
+  virtual bool is_locked() = 0;
   virtual void only(const std::string&) = 0;
   virtual void only(const std::string&, const type::latte_callback&) = 0;
   virtual void operator()() = 0;
   virtual void operator()(const std::string&) = 0;
   virtual void operator()(const std::string&, const type::latte_callback&) = 0;
+  virtual void pend(const std::string&) = 0;
+  virtual void execute(const type::latte_callback&) {};
+  virtual void execute(const std::string&, const type::latte_callback&) {};
   virtual std::string depth_string() = 0;
   std::string depth_string(int depth) const {
     std::string depth_string = "";
@@ -52,20 +55,28 @@ struct latte_describe : public latte_test {
       };
 
   ~latte_describe() = default;
+  virtual void lock() {
+    only_map_[depth()] = true;
+  }
+
+  virtual bool is_locked() {
+    return only_map_[depth()];
+  }
+
   /**
    * Restricts the test suite and labels the it as pending suite.
    */
   virtual void only(const std::string& description) {
-    only_map_[depth()] = true;
-    add_result(description);
+    lock();
+    this->pend(description);
   }
 
   /**
    * Restricts and runs the test suite.
    */
   virtual void only(const std::string& description, const type::latte_callback& function) {
-    only(description);
-    this->execute(function);
+    lock();
+    this->execute(description, function);
   };
 
   virtual void operator()() {}
@@ -74,8 +85,8 @@ struct latte_describe : public latte_test {
    * Labels the test suite as pending.
    */
   virtual void operator()(const std::string& description) {
-    if (!only_map_[this->depth()]) {
-      add_result(description);
+    if (!is_locked()) {
+      this->pend(description);
     }
   }
 
@@ -83,9 +94,8 @@ struct latte_describe : public latte_test {
    * Runs the test suite.
    */
   virtual void operator()(const std::string& description, const type::latte_callback& function) {
-    if (!only_map_[this->depth()]) {
-      this->operator()(description);
-      this->execute(function);
+    if (!is_locked()) {
+      this->execute(description, function);
     }
   }
 
@@ -113,23 +123,41 @@ struct latte_describe : public latte_test {
   latte_after_each* after_each_ = nullptr;
   std::unordered_map<int, bool> only_map_;
   
-  using latte_test::execute;
-  virtual void execute(const type::latte_callback& function) {
+  virtual void pend(const std::string& description) {
     if (depth() == 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_start);
     }
+
+    add_result(description);
+
+    if (!this->test_cases_.empty()) {
+      event::latte_describe_emitter.emit(event::latte_event::describe_event_test_result, this->test_cases_);
+      auto root = this->test_cases_.front();
+      this->test_suite_.push_back(root);
+      this->test_cases_.pop_front();
+    }
+
+    if (depth() == 0) {
+      event::latte_describe_emitter.emit(event::describe_event_test_end, this->test_suite_);
+    }
+    event::latte_describe_emitter.emit(event::describe_event_test_incremental_result, this->test_suite_);
+
+  }
+
+  using latte_test::execute;
+  virtual void execute(const std::string& description, const type::latte_callback& function) {
+    if (depth() == 0) {
+      event::latte_describe_emitter.emit(event::describe_event_test_start);
+    }
+
+    add_result(description);
     // Set describe()'s depth string
-    // Set describe()'s depth
     _latte_state.add_depth();
     // Start the call to other functions.
     auto time = bench::time([&] {
       function();
     });
 
-    // Assume that test is really passing
-    if (this->test_cases_.back()->is_pending()) {
-      this->test_cases_.back()->state_ = latte_result_state::passing;
-    }
     this->test_cases_.back()->time_ = time;
     // Clear the call stack at the specified level.
     this->clear_hooks();
@@ -142,9 +170,10 @@ struct latte_describe : public latte_test {
       this->test_cases_.pop_front();
     }
 
-    if (depth() <= 0) {
+    if (depth() == 0) {
       event::latte_describe_emitter.emit(event::describe_event_test_end, this->test_suite_);
     }
+
     event::latte_describe_emitter.emit(event::describe_event_test_incremental_result, this->test_suite_);
   }
 
@@ -168,26 +197,34 @@ struct latte_it : public latte_test {
         event::latte_it_emitter.emit(event::latte_event::it_event_init);
       }
 
+  virtual void lock() {
+    locked = true;
+  }
+
+  virtual bool is_locked() {
+    return locked;
+  }
+
   virtual void only(const std::string& description) {
-    only_ = true;
-    add_result(description);
+   lock();
+    this->pend(description);
   };
 
   virtual void only(const std::string& description, const type::latte_callback& function) {
-    only_ = true;
+   lock();
     execute(description, function);
   };
 
   virtual void operator()() {}
 
   virtual void operator()(const std::string& description) {
-    if (!only_) {
-      add_result(description);
+    if (!is_locked()) {
+     this->pend(description);
     }
   }
 
   virtual void operator()(const std::string& description, const type::latte_callback& function) {
-    if (!only_) {
+    if (!locked) {
       execute(description, function);
     }
   }
@@ -208,10 +245,13 @@ struct latte_it : public latte_test {
   }
 
   void add_result(const std::string& description, exception::latte_exception error, latte_result_state state, double time) {
-    if (state == latte_result_state::failing) {
+    
+    if (state == latte_result_state::passing) {
+      this->describe_->test_cases_.back()->state_ = state;
+    } else if (state == latte_result_state::failing) {
       // Update the result_state for describe() if a test case fails.
       this->describe_->test_cases_.back()->state_ = state;
-    }
+    } 
     // Create the result for it()
     auto result = std::make_shared<latte_it_result>(description, error, state, time);
     // Set it()'s depth string
@@ -224,8 +264,13 @@ struct latte_it : public latte_test {
 
   private:
   latte_describe* describe_ = nullptr;
-  bool only_ = false;
+  bool locked = false;
 
+  virtual void pend(const std::string& description) {
+    event::latte_it_emitter.emit(event::latte_event::it_event_test_start);
+    add_result(description);
+    event::latte_it_emitter.emit(event::latte_event::it_event_test_end);
+  }
   using latte_test::execute;
   // Executes the hooks and the callback method
   virtual void execute(const std::string& description, const type::latte_callback& function) {
