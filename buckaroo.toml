@@ -1,0 +1,8 @@
+[[dependency]]
+package = "github.com/iwatakeshi/bench"
+version = "*"
+
+[[dependency]]
+package = "github.com/iwatakeshi/to_string"
+version = "*"
+
