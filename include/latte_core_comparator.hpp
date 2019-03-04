@@ -51,12 +51,6 @@ inline bool __equal(T a, T b) { return a == b; };
 
 template <typename T, typename U>
 inline bool __equal(T, U) {
-  // std::string a_t = type_name<decltype(a)>();
-  // std::string b_t = type_name<decltype(b)>();
-  // _mocha_util.debug(
-  //   _mocha_util.generate_depth_string() +
-  //   _mocha_util.color_yellow("[mocha::warn] - Using a default comparator for type [T = " + a_t + "] and [U = " + b_t + "] which will return false.")
-  // );
   return false;
 };
 

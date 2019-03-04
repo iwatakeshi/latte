@@ -19,8 +19,10 @@ using namespace latte::core::event;
 using namespace latte::color;
 using latte::core::debug;
 using latte::core::latte_describe_result;
+using latte::core::latte_it_result;
 using latte::core::latte_result_state;
 using describe_results_t = latte::type::latte_results_t<latte_describe_result>;
+using it_result_t = latte::type::latte_result_t<latte_it_result>;
 }
 
 namespace latte {
@@ -62,27 +64,33 @@ struct reporter_spec {
   }
 
   static void process_completed(describe_results_t test_suites) {
-    describe_results_t passing_test_suites;
+    // describe_results_t passing_test_suites;
     describe_results_t failing_test_suites;
-    describe_results_t pending_test_suites;
+    // describe_results_t pending_test_suites;
     int passing_count = 0;
     int failing_count = 0;
     int pending_count = 0;
     double total_time = 0;
     for (auto test_suite : test_suites) {
       if (test_suite->is_passing()) {
-        passing_count += test_suite->results().size();
-        passing_test_suites.push_back(test_suite);
+        passing_count += filter(test_suite->results(), [] (it_result_t result) {
+          return result->is_passing();
+        }).size();
+        // passing_test_suites.push_back(test_suite);
       }
 
       if (test_suite->is_failing()) {
-        failing_count += test_suite->results().size();
+        failing_count += filter(test_suite->results(), [] (it_result_t result) {
+          return result->is_failing();
+        }).size();
         failing_test_suites.push_back(test_suite);
       }
       // Note: These are pending tests for test suites and not for test cases!
       if (test_suite->is_pending()) {
-        pending_count += test_suite->results().size();
-        pending_test_suites.push_back(test_suite);
+        pending_count += filter(test_suite->results(), [] (it_result_t result) {
+          return result->is_pending();
+        }).size();
+        // pending_test_suites.push_back(test_suite);
       }
       total_time += test_suite->time();
     }
@@ -97,13 +105,23 @@ struct reporter_spec {
       int failed_count = 0;
       for (auto test_suite : failing_test_suites) {
         for (auto test_case : test_suite->results()) {
-          debug(white(std::to_string(failed_count) + ") " + test_case->description()) + " : " + red(test_case->error().what()) + "\n");
-          failed_count++;
+          if (test_case->is_failing()) {
+            debug(white(std::to_string(failed_count) + ") " + test_case->description()) + " : " + red(test_case->error().what()) + "\n");
+            failed_count++;
+          }
         }
       }
     } else {
       debug(green(std::to_string(total_tests) + " tests completed " + "(" + std::to_string(total_time) + ")"));
     }
+  }
+  
+  //https://stackoverflow.com/a/53268928/1251031
+  template <typename T, typename U>
+  static T filter(const T& container, U predicate) {
+    T result;
+    std::copy_if(container.begin(), container.end(), std::back_inserter(result), predicate);
+    return result;
   }
 };
 } // reporter

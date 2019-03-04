@@ -36,7 +36,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
     return this;
   };
@@ -59,7 +59,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
     return this;
   };
@@ -83,7 +83,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
     return this;
   };
@@ -107,7 +107,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
     return this;
   };
@@ -340,7 +340,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to strictly " + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to strictly " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
     return this;
   };
@@ -371,7 +371,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to strictly " + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to strictly " + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
     return this;
   };
@@ -395,7 +395,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to strictly" + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to strictly" + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
 
     return this;
@@ -420,7 +420,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       result,
-      "Expected " + to_string(this->actual) + " to strictly" + (this->negate ? "not " : "") + "equal " + to_string(expected)
+      "expected " + to_string(this->actual) + " to strictly" + (this->negate ? "not " : "") + "equal " + to_string(expected)
     );
 
     return this;
@@ -654,7 +654,7 @@ struct expect_t {
       to_string(this->actual),
       "close to " + to_string(expected),
       fabs(this->actual - expected) <= tolerance,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + (to_string(expected) + " within tolerance of " + to_string(tolerance))
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "equal " + (to_string(expected) + " within tolerance of " + to_string(tolerance))
     );
 
     return this;
@@ -665,7 +665,7 @@ struct expect_t {
       to_string(this->actual),
       "within " + to_string(lower) + " and " + to_string(upper),
       this->actual > lower && this->actual < upper,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be above " + to_string(lower) + " and below " + to_string(upper)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be above " + to_string(lower) + " and below " + to_string(upper)
     );
 
     return this;
@@ -677,7 +677,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       this->actual > expected,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be greater than " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be greater than " + to_string(expected)
     );
 
     return this;
@@ -694,7 +694,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       this->actual >= expected,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be greater than or equal to " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be greater than or equal to " + to_string(expected)
     );
 
     return this;
@@ -708,7 +708,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       this->actual < expected,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be lesser than " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be lesser than " + to_string(expected)
     );
 
     return this;
@@ -727,7 +727,7 @@ struct expect_t {
       to_string(this->actual),
       to_string(expected),
       this->actual <= expected,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be less than or equal to " + to_string(expected)
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "be less than or equal to " + to_string(expected)
     );
 
     return this;
@@ -741,7 +741,7 @@ struct expect_t {
     bool result = lambda_test(this->actual);
     return this->satisfy(
       result,
-      "Expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "satisfy the given test"
+      "expected " + to_string(this->actual) + " to " + (this->negate ? "not " : "") + "satisfy the given test"
     );
   };
 
