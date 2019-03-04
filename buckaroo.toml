@@ -1,4 +1,4 @@
-target = ["//:latte"]
+targets = ["//:latte"]
 [[dependency]]
 package = "github.com/iwatakeshi/bench"
 version = "*"
