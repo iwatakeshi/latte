@@ -44,7 +44,7 @@ latte isn't complete without your help. Submit a pull request or start a discuss
 
 | Constructor | Description |
 |--------------|-------------|
-| `expect(T actual)` | Return a pointer of type `expect_t` that provides a [chainable](#BDD) API.
+| `expect(T actual)` | Returns a pointer of type `expect_t` that provides a [chainable](#BDD) API.
 
 ### Example
 
