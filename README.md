@@ -50,7 +50,7 @@ latte isn't complete without your help. Submit a pull request or start a discuss
 
 ```cpp
 #include <iostream>
-#include "latte.h"
+#include <latte.hpp>
 using namespace latte;
 using latte::style::expect;
 
