@@ -94,7 +94,9 @@ struct latte_describe_result {
   }
 
   latte_describe_result(const std::string& description) :
-      latte_describe_result(description, latte_result_state::pending, 0.0) {};
+      latte_describe_result(description, latte_result_state::passing, 0.0) {};
+  latte_describe_result(const std::string& description, latte_result_state state) :
+      latte_describe_result(description, state, 0.0) {};
   latte_describe_result(const std::string& description, latte_result_state state, double time) :
       description_(description), state_(state), time_(time) {};
 
@@ -111,7 +113,7 @@ struct latte_describe_result {
     results_.push_back(result);
   }
   void add_result(const std::string& description) {
-    add_result(description, exception::latte_exception(), latte_result_state::pending, 0.0);
+    add_result(description, exception::latte_exception(), latte_result_state::passing, 0.0);
   }
 
   void add_result(const std::string& description, const exception::latte_exception error, latte_result_state state, double time) {
@@ -156,7 +158,7 @@ struct latte_describe_result {
 
   private:
   std::string description_ = "";
-  latte_result_state state_ = latte_result_state::pending;
+  latte_result_state state_ = latte_result_state::passing;
   std::string depth_string_ = "";
   double time_ = 0;
   std::list<std::shared_ptr<latte_it_result>> results_;

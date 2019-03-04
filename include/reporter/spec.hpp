@@ -72,26 +72,22 @@ struct reporter_spec {
     int pending_count = 0;
     double total_time = 0;
     for (auto test_suite : test_suites) {
-      if (test_suite->is_passing()) {
-        passing_count += filter(test_suite->results(), [] (it_result_t result) {
-          return result->is_passing();
-        }).size();
-        // passing_test_suites.push_back(test_suite);
-      }
 
       if (test_suite->is_failing()) {
-        failing_count += filter(test_suite->results(), [] (it_result_t result) {
-          return result->is_failing();
-        }).size();
         failing_test_suites.push_back(test_suite);
       }
+
+      passing_count += filter(test_suite->results(), [](it_result_t result) {
+        return result->is_passing();
+      }).size();
+
+      failing_count += filter(test_suite->results(), [](it_result_t result) {
+        return result->is_failing();
+      }).size();
       // Note: These are pending tests for test suites and not for test cases!
-      if (test_suite->is_pending()) {
-        pending_count += filter(test_suite->results(), [] (it_result_t result) {
-          return result->is_pending();
-        }).size();
-        // pending_test_suites.push_back(test_suite);
-      }
+      pending_count += filter(test_suite->results(), [](it_result_t result) {
+        return result->is_pending();
+      }).size();
       total_time += test_suite->time();
     }
 
@@ -115,7 +111,7 @@ struct reporter_spec {
       debug(green(std::to_string(total_tests) + " tests completed " + "(" + std::to_string(total_time) + ")"));
     }
   }
-  
+
   //https://stackoverflow.com/a/53268928/1251031
   template <typename T, typename U>
   static T filter(const T& container, U predicate) {

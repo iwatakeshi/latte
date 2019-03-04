@@ -109,7 +109,7 @@ struct latte_describe : public latte_test {
    * Adds describe()'s result to the list of test suites.
    */
   void add_result(const std::string& description) {
-    auto describe = std::make_shared<latte_describe_result>(description);
+    auto describe = std::make_shared<latte_describe_result>(description, latte_result_state::pending);
     describe->depth_string_ = this->depth_string();
     this->test_cases_.push_back(describe);
   }
