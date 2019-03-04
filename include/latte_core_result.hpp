@@ -14,18 +14,6 @@ enum latte_result_state {
   failing = -1,
 };
 
-// struct latte_result_counter {
-//   unsigned int pending = 0;
-//   unsigned int passing = 0;
-//   unsigned int failing = 0;
-
-//   void reset() {
-//     pending = passing = failing = 0;
-//   }
-// };
-
-// latte_result_counter _latte_result_counter;
-
 struct latte_it_result {
   latte_it_result() {}
   latte_it_result(const latte_it_result& other) {
@@ -106,7 +94,7 @@ struct latte_describe_result {
   }
 
   latte_describe_result(const std::string& description) :
-      description_(description){};
+      latte_describe_result(description, latte_result_state::pending, 0.0) {};
   latte_describe_result(const std::string& description, latte_result_state state, double time) :
       description_(description), state_(state), time_(time) {};
 
@@ -122,8 +110,8 @@ struct latte_describe_result {
   void add_result(std::shared_ptr<latte_it_result> result) {
     results_.push_back(result);
   }
-  void add_result(const std::string& description, latte_result_state state) {
-    add_result(description, exception::latte_exception(), state, 0.0);
+  void add_result(const std::string& description) {
+    add_result(description, exception::latte_exception(), latte_result_state::pending, 0.0);
   }
 
   void add_result(const std::string& description, const exception::latte_exception error, latte_result_state state, double time) {

@@ -12,25 +12,30 @@ using latte::style::expect;
 
 int main() {
   latte::runner([&]() {
-    describe("Hello world", [&] {
+    describe("hello world", [&] {
       it("should do something", [&] {
         expect(20).to->equal(20);
         expect(100).to->equal(500);
       });
 
-      describe("What! Cool!", [&] {
+      describe("what! cool!", [&] {
         it("should do something 2", [&] {
-
+          expect(100).to->equal(20);
         });
       });
 
-      describe("Test", [&]() {
+      describe("test", [&]() {
         it("should do something 3", [&] {
-
+          expect(100).to->equal(100);
         });
-        describe("Test again!", [&] () {
-
+        it("test again!", [&] {
+          expect(100).to->equal(100);
         });
+      });
+
+      describe("pending test suite.");
+      describe("test 2", [&] {
+        it("pending test case");
       });
     });
   });

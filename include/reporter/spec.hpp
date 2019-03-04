@@ -25,7 +25,7 @@ using describe_results_t = latte::type::latte_results_t<latte_describe_result>;
 
 namespace latte {
 namespace reporter {
-
+static int test_suite_failed_count = 0;
 struct reporter_spec {
   reporter_spec() {};
 
@@ -42,8 +42,8 @@ struct reporter_spec {
   static void process_test_suite(describe_results_t current_test_suite) {
     auto test_suite = current_test_suite.front();
     auto describe_description = test_suite->description();
-    std::cout << test_suite->depth_string() + white(describe_description) << std::endl;
-    int failed_counts = 0;
+    describe_description = test_suite->is_pending() ? cyan(describe_description) : white(describe_description);
+    std::cout << test_suite->depth_string() + describe_description << std::endl;
     for (auto test_case : test_suite->results()) {
       std::string description = test_case->description();
       switch (test_case->state()) {
@@ -51,11 +51,10 @@ struct reporter_spec {
         description = green("✓") + " " + description;
         break;
       case latte_result_state::pending:
-        description = description;
         description = cyan(description);
         break;
       default:
-        description = red(std::to_string(failed_counts++) + ") " + description);
+        description = red(std::to_string(test_suite_failed_count++) + ") " + description);
         break;
       }
       debug(test_case->depth_string() + description);
@@ -95,8 +94,8 @@ struct reporter_spec {
     if (failing_test_suites.size() > 0) {
 
       debug(red(std::to_string(failing_count) + " out of " + std::to_string(total_tests) + " tests failed") + ":" + "\n");
+      int failed_count = 0;
       for (auto test_suite : failing_test_suites) {
-        int failed_count = 0;
         for (auto test_case : test_suite->results()) {
           debug(white(std::to_string(failed_count) + ") " + test_case->description()) + " : " + red(test_case->error().what()) + "\n");
           failed_count++;
