@@ -121,5 +121,4 @@ These provide actual functionality in the chain.
 | `below(double value)` | `lt(...)`, `lessThan(...)` | Asserts that the target is less than `value`. | |
 | `most(double value)`| `lte(...)` | Asserts that the target is less than or equal to `value`. | |
 | `satisfy(function<bool, T> test, function<string, T, expect_flags> fail?)` | | Asserts that the target passes a given truth test. | |
-| `satisfy(latte::mocha_plugin plugin, U expected)` | | Asserts that the target passes a given truth test. | |
 | `satisfy(bool test_result_bool, string fail_message)` | | Asserts that the target passes a given truth test. | |
