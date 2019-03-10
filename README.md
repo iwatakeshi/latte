@@ -34,19 +34,22 @@ latte isn't complete without your help. Submit a pull request or start a discuss
 
 ## API
 
-| Test Function | Description  |
+### latte
+
+| Function | Description  |
 |----------------|--------------|
 | `describe(string description)` |  Describes a pending test suite.    |
 | `describe(string description, function<void> callback)`       | Describes the test suite and can be nested. |
 | `it(string description)` |  Describes a pending test case.    |
 | `it (string description, function<(void)> callback)` 		| Describes the test case. |
 
+### expect
 
-| Constructor | Description |
+| Function | Description |
 |--------------|-------------|
 | `expect(T actual)` | Returns a pointer of type `expect_t` that provides a [chainable](#BDD) API.
 
-### Example
+#### Example
 
 ```cpp
 #include <iostream>
