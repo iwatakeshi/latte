@@ -40,6 +40,8 @@ latte isn't complete without your help. Submit a pull request or start a discuss
 |----------------|--------------|
 | `describe(string description)` |  Describes a pending test suite.    |
 | `describe(string description, function<void> callback)`       | Describes the test suite and can be nested. |
+| `describe.only(string description)` |  Describes a pending test suite that is strictly performed.    |
+| `describe.only(string description, function<void> callback)`       | Describes the test suite that is strictly performed and can be nested. |
 | `it(string description)` |  Describes a pending test case.    |
 | `it (string description, function<(void)> callback)` 		| Describes the test case. |
 
