@@ -43,7 +43,9 @@ latte isn't complete without your help. Submit a pull request or start a discuss
 | `describe.only(string description)` |  Describes a pending test suite that is strictly performed.    |
 | `describe.only(string description, function<void> callback)`       | Describes the test suite that is strictly performed and can be nested. |
 | `it(string description)` |  Describes a pending test case.    |
-| `it (string description, function<(void)> callback)` 		| Describes the test case. |
+| `it(string description, function<(void)> callback)` 		| Describes the test case. |
+| `it.only(string description)` |  Describes a pending test case that is stricly performed.    |
+| `it.only(string description, function<(void)> callback)` 		| Describes the test case that is strictly performed. |
 
 ### expect
 
